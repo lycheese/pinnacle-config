@@ -40,7 +40,6 @@ pub fn setup(s: &Settings) {
         boxed(Dwindle {
             inner_gaps: gaps.into(),
             outer_gaps: gaps.into(),
-            ..Default::default()
         }),
         boxed(Fair {
             inner_gaps: gaps.into(),
