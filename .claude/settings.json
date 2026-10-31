@@ -15,7 +15,8 @@
       "Bash(pctl close:*)",
       "Bash(pinnacle client:*)",
       "Bash(sudo:*)",
-      "Bash(./scripts/install-fedora.sh:*)"
+      "Bash(./scripts/install-fedora.sh:*)",
+      "Bash(./scripts/install-popos.sh:*)"
     ]
   }
 }

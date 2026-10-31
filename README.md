@@ -1,8 +1,8 @@
 # pinnacle-config
 
-My [Pinnacle](https://github.com/pinnacle-comp/pinnacle) setup for Fedora Workstation 44:
-a Rust-configured, dynamically tiling Wayland compositor that runs alongside GNOME and is built to be
-changed live — by hand or by Claude Code.
+My [Pinnacle](https://github.com/pinnacle-comp/pinnacle) setup for Fedora Workstation 44 and
+Pop!_OS 24.04: a Rust-configured, dynamically tiling Wayland compositor that runs alongside the
+existing desktop and is built to be changed live — by hand or by Claude Code.
 
 - **Live reconfiguration:** the config is a separate Rust program. `Mod+Ctrl+R` (or `pctl reload`)
   rebuilds and restarts it; the compositor and your windows keep running.
@@ -17,12 +17,16 @@ changed live — by hand or by Claude Code.
 ```sh
 git clone git@github.com:lycheese/pinnacle-config.git ~/src/pinnacle-config
 cd ~/src/pinnacle-config
-./scripts/install-fedora.sh          # add --no-lua to skip `pinnacle client`
-./scripts/nested.sh                  # try it in a window inside GNOME (Mod = Alt)
+./scripts/install-fedora.sh          # Fedora 44
+./scripts/install-popos.sh           # Pop!_OS 24.04 / Ubuntu 24.04 (installs Rust via rustup)
+./scripts/nested.sh                  # try it in a window inside your desktop (Mod = Alt)
 ```
 
-Then log out, choose **Pinnacle** from the gear icon on the login screen, and log in.
-GNOME stays installed and selectable.
+Both installers accept `--no-lua` (skip `pinnacle client`) and `--packages-only`.
+Pop!_OS 22.04 is not supported: its libraries are too old.
+
+Then log out, choose **Pinnacle** from the session menu on the login screen, and log in.
+Your existing desktop (GNOME or COSMIC) stays installed and selectable.
 
 ## Default binds
 
@@ -59,5 +63,5 @@ For compositor changes, Claude works in `~/src/pinnacle` and tests nested first 
 
 Pinnacle's API is pre-1.0 and changes between releases. To update:
 1. Read the [migration notes](https://github.com/pinnacle-comp/pinnacle/blob/main/wiki/configuration/breaking-changes-and-migrations.md).
-2. Bump the tag in `Cargo.toml` and run `PINNACLE_REF=<new tag> ./scripts/install-fedora.sh`.
+2. Bump the tag in `Cargo.toml` and run `PINNACLE_REF=<new tag> ./scripts/install-<distro>.sh`.
 3. `cargo check --workspace`, fix what broke, reload.

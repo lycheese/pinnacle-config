@@ -34,3 +34,47 @@ jobs:
           cargo clippy --workspace --all-targets --message-format=short -- -D warnings 2>&1 \
             | tee clippy.txt \
             | sed -nE 's#^([^: ]+\.rs):([0-9]+):([0-9]+): (warning|error): (.*)#::error file=\1,line=\2,col=\3::\5#p'
+
+  # Runs each installer's package step on a clean system to catch wrong or missing package names.
+  installers:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: fedora:44
+            script: scripts/install-fedora.sh
+            prepare: dnf install -y sudo
+          - image: ubuntu:24.04
+            script: scripts/install-popos.sh
+            prepare: apt-get update && apt-get install -y sudo
+    container: ${{ matrix.image }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Prepare
+        run: ${{ matrix.prepare }}
+
+      - name: Install packages
+        shell: bash
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          set -o pipefail
+          if ! ${{ matrix.script }} --packages-only 2>&1 | tee install.log; then
+            grep -E "Unable to locate package|No match for argument|has no installation candidate|^E: |^Error" install.log \
+              | sed 's/^/::error file=${{ matrix.script }}::/'
+            exit 1
+          fi
+
+  shellcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: ShellCheck
+        shell: bash
+        run: |
+          set -o pipefail
+          shellcheck -x -f gcc scripts/*.sh scripts/lib/*.sh \
+            | tee shellcheck.txt \
+            | sed -nE 's#^([^:]+):([0-9]+):([0-9]+): (warning|error|note): (.*)#::error file=\1,line=\2,col=\3::\5#p'

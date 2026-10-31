@@ -1,7 +1,7 @@
 # CLAUDE.md
 
 This repo is a personal config for the **Pinnacle** Wayland compositor (Rust, Smithay-based,
-AwesomeWM-style dynamic tiling with tags) on Fedora Workstation 44. It is symlinked to
+AwesomeWM-style dynamic tiling with tags) on Fedora Workstation 44 or Pop!_OS 24.04. It is symlinked to
 `~/.config/pinnacle`. Pinnacle runs `cargo run --package pinnacle-config` (see `pinnacle.toml`)
 on startup and on every reload; the config talks to the compositor over gRPC.
 
@@ -15,8 +15,9 @@ on startup and on every reload; the config talks to the compositor over gRPC.
 | `config/src/tags.rs` | Tags 1–9 and their binds |
 | `config/src/plugins/` | Self-contained features, one module each, registered in `plugins/mod.rs` |
 | `pctl/` | CLI that queries/controls the running session and prints JSON |
-| `scripts/install-fedora.sh` | Builds and installs Pinnacle + session files, links this repo |
-| `scripts/nested.sh` | Runs Pinnacle as a window inside GNOME with this config |
+| `scripts/install-fedora.sh`, `scripts/install-popos.sh` | Distro packages and toolchain, then the shared steps |
+| `scripts/lib/common.sh` | Shared install steps: build Pinnacle, install session files, link this repo |
+| `scripts/nested.sh` | Runs Pinnacle as a window inside the current desktop with this config |
 
 The compositor source lives in `~/src/pinnacle` (not in this repo).
 
@@ -64,7 +65,7 @@ shared state lives in `Arc<Mutex<_>>` inside the plugin. Every bind needs `.grou
 
 - Work in `~/src/pinnacle` on a branch (ideally a fork; set `PINNACLE_REPO` for the install script).
 - Build with `just build` and test **nested** first: `scripts/nested.sh ~/src/pinnacle/target/debug/pinnacle`.
-- Only install a modified compositor (re-run `scripts/install-fedora.sh` with `PINNACLE_REF=<branch>`)
+- Only install a modified compositor (re-run the install script for this distro with `PINNACLE_REF=<branch>`)
   after it works nested. If you change the protobuf API, the `pinnacle-api` dependency here must
   point at the same branch.
 
