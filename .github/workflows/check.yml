@@ -15,7 +15,7 @@ jobs:
           dnf install -y git rust cargo clippy rustfmt gcc pkgconf-pkg-config \
             protobuf-compiler wayland-devel libxkbcommon-devel
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Format
         run: cargo fmt --all --check
@@ -26,5 +26,11 @@ jobs:
       - name: Check (without Snowcap)
         run: cargo check --package pinnacle-config --no-default-features
 
+      # Findings are also emitted as annotations, so they show on the commit without opening logs.
       - name: Clippy
-        run: cargo clippy --workspace --all-targets -- -D warnings
+        shell: bash
+        run: |
+          set -o pipefail
+          cargo clippy --workspace --all-targets --message-format=short -- -D warnings 2>&1 \
+            | tee clippy.txt \
+            | sed -nE 's#^([^: ]+\.rs):([0-9]+):([0-9]+): (warning|error): (.*)#::error file=\1,line=\2,col=\3::\5#p'
