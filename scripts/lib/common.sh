@@ -14,7 +14,8 @@ PINNACLE_SRC="${PINNACLE_SRC:-$HOME/src/pinnacle}"
 CONFIG_REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
 WITH_LUA=1
-# shellcheck disable=SC2034  # read by the distro scripts
+# PACKAGES_ONLY is read by the distro scripts.
+# shellcheck disable=SC2034
 PACKAGES_ONLY=0
 
 step() { printf '\n\033[1;34m==> %s\033[0m\n' "$*"; }

@@ -62,7 +62,11 @@ jobs:
         run: |
           set -o pipefail
           if ! ${{ matrix.script }} --packages-only 2>&1 | tee install.log; then
-            grep -v '^\s*$' install.log | tail -n 10 | sed 's/^/::error file=${{ matrix.script }}::/'
+            echo "::error::installer failed; log has $(wc -l < install.log) lines"
+            # Strip colors and progress-bar carriage returns, escape % for workflow commands.
+            sed -e 's/\x1b\[[0-9;]*[A-Za-z]//g' -e 's/.*\r//' -e 's/%/%25/g' install.log \
+              | grep -v '^[[:space:]]*$' | tail -n 9 \
+              | sed 's/^/::error file=${{ matrix.script }}::/'
             exit 1
           fi
 
