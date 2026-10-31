@@ -1,0 +1,16 @@
+[package]
+name = "pinnacle-config"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish = false
+
+[dependencies]
+pinnacle-api = { workspace = true }
+
+[features]
+# Snowcap is Pinnacle's widget system: keybind overlay, quit prompt, crash messages, focus borders.
+# It needs working Vulkan. Build with `--no-default-features` if that is a problem.
+default = ["snowcap"]
+snowcap = ["pinnacle-api/snowcap"]

@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cargo check:*)",
+      "Bash(cargo clippy:*)",
+      "Bash(cargo build:*)",
+      "Bash(cargo fmt:*)",
+      "Bash(pctl state)",
+      "Bash(pctl windows)",
+      "Bash(pctl focused)",
+      "Bash(pctl reload)",
+      "Bash(journalctl --user -u pinnacle:*)"
+    ],
+    "ask": [
+      "Bash(pctl close:*)",
+      "Bash(pinnacle client:*)",
+      "Bash(sudo:*)",
+      "Bash(./scripts/install-fedora.sh:*)"
+    ]
+  }
+}

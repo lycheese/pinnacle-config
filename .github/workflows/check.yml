@@ -1,0 +1,30 @@
+name: check
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    container: fedora:44
+    steps:
+      - name: Install toolchain and headers
+        run: |
+          dnf install -y git rust cargo clippy rustfmt gcc pkgconf-pkg-config \
+            protobuf-compiler wayland-devel libxkbcommon-devel
+
+      - uses: actions/checkout@v4
+
+      - name: Format
+        run: cargo fmt --all --check
+
+      - name: Check (with Snowcap)
+        run: cargo check --workspace --all-targets
+
+      - name: Check (without Snowcap)
+        run: cargo check --package pinnacle-config --no-default-features
+
+      - name: Clippy
+        run: cargo clippy --workspace --all-targets -- -D warnings

@@ -1,0 +1,21 @@
+//! Plugins: self-contained features layered on top of the base config.
+//!
+//! Contract for a plugin:
+//! - one file (or folder) in this directory,
+//! - a `pub fn setup(settings: &Settings)` that registers binds, rules and signals,
+//! - no state shared with other plugins except through the Pinnacle API,
+//! - a doc comment at the top saying what it does and which binds it adds.
+//!
+//! To disable a plugin, comment out its line in `setup` below.
+
+mod autostart;
+mod focus_history;
+mod window_rules;
+
+use crate::settings::Settings;
+
+pub fn setup(settings: &Settings) {
+    window_rules::setup(settings);
+    focus_history::setup(settings);
+    autostart::setup(settings);
+}

@@ -1,0 +1,13 @@
+# Pinnacle reads this file from ~/.config/pinnacle/ (that directory is a symlink to this repo).
+# The command below is run on startup and on every config reload (Mod+Ctrl+R or `pctl reload`).
+# Paths are relative to this directory.
+#
+# `cargo run` rebuilds the config when its source changed. If the build fails or the config
+# crashes, Pinnacle falls back to its built-in default config, so you never end up locked out.
+run = ["cargo", "run", "--quiet", "--package", "pinnacle-config"]
+
+[envs]
+# RUST_LOG = "info"
+
+# Uncomment to stop Xwayland from starting.
+# no_xwayland = true
