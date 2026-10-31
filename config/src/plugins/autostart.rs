@@ -10,8 +10,9 @@ use crate::settings::Settings;
 const AUTOSTART: &[&[&str]] = &[
     &["waybar"],
     &["mako"],
-    // Polkit agent: Fedora path, then Pop!_OS/Ubuntu path. Only the installed one starts.
-    &["/usr/libexec/polkit-gnome-authentication-agent-1"],
+    // Polkit agent: Fedora (mate-polkit), then Pop!_OS/Ubuntu (policykit-1-gnome).
+    // Only the installed one starts.
+    &["/usr/libexec/polkit-mate-authentication-agent-1"],
     &["/usr/lib/policykit-1-gnome/polkit-gnome-authentication-agent-1"],
 ];
 
