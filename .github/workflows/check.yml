@@ -62,8 +62,7 @@ jobs:
         run: |
           set -o pipefail
           if ! ${{ matrix.script }} --packages-only 2>&1 | tee install.log; then
-            grep -E "Unable to locate package|No match for argument|has no installation candidate|^E: |^Error" install.log \
-              | sed 's/^/::error file=${{ matrix.script }}::/'
+            grep -v '^\s*$' install.log | tail -n 10 | sed 's/^/::error file=${{ matrix.script }}::/'
             exit 1
           fi
 

@@ -15,7 +15,7 @@
 # Overrides (PINNACLE_REPO, PINNACLE_REF, PINNACLE_SRC) are described in scripts/lib/common.sh.
 
 set -euo pipefail
-# shellcheck source=lib/common.sh
+# shellcheck source=scripts/lib/common.sh
 source "$(dirname "${BASH_SOURCE[0]}")/lib/common.sh"
 parse_args "$(sed -n '2,16p' "$0" | sed 's/^# \{0,1\}//')" "$@"
 

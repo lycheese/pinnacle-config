@@ -17,14 +17,15 @@
 # Overrides (PINNACLE_REPO, PINNACLE_REF, PINNACLE_SRC) are described in scripts/lib/common.sh.
 
 set -euo pipefail
-# shellcheck source=lib/common.sh
+# shellcheck source=scripts/lib/common.sh
 source "$(dirname "${BASH_SOURCE[0]}")/lib/common.sh"
 parse_args "$(sed -n '2,18p' "$0" | sed 's/^# \{0,1\}//')" "$@"
 
 # Pop!_OS 22.04 and other older bases lack libdisplay-info and recent Wayland libraries.
 # shellcheck disable=SC1091
 . /etc/os-release
-if [[ "${VERSION_ID:-0}" < "24.04" ]]; then
+version="${VERSION_ID:-0}"
+if (( ${version%%.*} < 24 )); then
     echo "This script needs Pop!_OS/Ubuntu 24.04 or newer (found ${PRETTY_NAME:-unknown})." >&2
     exit 1
 fi

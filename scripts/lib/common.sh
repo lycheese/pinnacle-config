@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # Shared install steps, sourced by scripts/install-<distro>.sh.
 # The distro scripts install packages and a Rust toolchain; everything after that lives here,
 # so both installers build and install Pinnacle the same way.
@@ -13,6 +14,7 @@ PINNACLE_SRC="${PINNACLE_SRC:-$HOME/src/pinnacle}"
 CONFIG_REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
 WITH_LUA=1
+# shellcheck disable=SC2034  # read by the distro scripts
 PACKAGES_ONLY=0
 
 step() { printf '\n\033[1;34m==> %s\033[0m\n' "$*"; }
