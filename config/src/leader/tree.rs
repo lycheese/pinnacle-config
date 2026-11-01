@@ -128,6 +128,7 @@ pub fn build(s: &Settings) -> Vec<Entry> {
     let files = s.file.str("apps.file_manager", "");
 
     vec![
+        script('C', "Capture a thought", "capture/quick.sh", &[]),
         menu(
             'o',
             "open",
@@ -159,6 +160,15 @@ pub fn build(s: &Settings) -> Vec<Entry> {
                     "files/edit-config.sh",
                     &["--local"],
                 ),
+            ],
+        ),
+        menu(
+            'n',
+            "notes",
+            vec![
+                script('c', "Capture in Helix", "capture/edit.sh", &[]),
+                script('i', "Open inbox", "capture/search.sh", &["--open"]),
+                script('s', "Search captures", "capture/search.sh", &[]),
             ],
         ),
         menu(

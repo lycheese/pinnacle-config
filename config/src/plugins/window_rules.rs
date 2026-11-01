@@ -19,6 +19,23 @@ const TAG_PINS: &[(&str, &str)] = &[
     // ("org.mozilla.firefox", "2"),
 ];
 
+/// The quick-capture Helix window (scripts/capture/edit.sh): floating, centred, this size.
+const CAPTURE_APP: &str = "pinnacle-capture";
+const CAPTURE_SIZE: (u32, u32) = (720, 360);
+
+/// Centres a window of size `(w, h)` on the focused output.
+fn center(win: &WindowHandle, (w, h): (u32, u32)) {
+    let Some(out) = pinnacle_api::output::get_focused() else {
+        return;
+    };
+    let (Some(loc), Some(size)) = (out.loc(), out.logical_size()) else {
+        return;
+    };
+    let x = loc.x + (size.w as i32 - w as i32) / 2;
+    let y = loc.y + (size.h as i32 - h as i32) / 2;
+    win.set_geometry(x, y, w, h);
+}
+
 pub fn setup(_settings: &Settings) {
     window::add_window_rule(|win: WindowHandle| {
         #[cfg(feature = "snowcap")]
@@ -32,6 +49,11 @@ pub fn setup(_settings: &Settings) {
 
         if FLOATING_APPS.contains(&app_id.as_str()) {
             win.set_floating(true);
+        }
+
+        if app_id == CAPTURE_APP {
+            win.set_floating(true);
+            center(&win, CAPTURE_SIZE);
         }
 
         if let Some((_, tag_name)) = TAG_PINS.iter().find(|(id, _)| *id == app_id)

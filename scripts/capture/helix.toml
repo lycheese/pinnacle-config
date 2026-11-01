@@ -1,0 +1,19 @@
+# Helix config for the capture window (scripts/capture/edit.sh). Replaces your own
+# ~/.config/helix/config.toml in that window only.
+#
+#   Ctrl+W   insert the window that was focused when the capture started
+#   Ctrl+Y   insert the clipboard as it was then
+#   :wq      save to the inbox     :q!  discard
+#
+# $CAPTURE_CTX is set by edit.sh; the shell expands it when the key runs.
+
+[editor]
+soft-wrap.enable = true
+
+[keys.insert]
+C-w = ":insert-output cat \"$CAPTURE_CTX/window\""
+C-y = ":insert-output cat \"$CAPTURE_CTX/clipboard\""
+
+[keys.normal]
+C-w = ":insert-output cat \"$CAPTURE_CTX/window\""
+C-y = ":insert-output cat \"$CAPTURE_CTX/clipboard\""
