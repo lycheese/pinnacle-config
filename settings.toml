@@ -16,6 +16,9 @@
 [apps]
 # Commands run with `sh -c`, so they may contain arguments.
 terminal = "alacritty"
+# How scripts start a program in a new terminal window: %c is the app ID (used by window
+# rules), %t the window title, and the program follows. foot: "foot --app-id %c --title %t".
+terminal_run = "alacritty --class %c --title %t -e"
 launcher = "fuzzel"
 # Editor for Menu → f (files) and notes. Runs inside the terminal.
 editor = "hx"

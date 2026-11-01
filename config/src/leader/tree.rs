@@ -58,6 +58,17 @@ fn cmd(key: char, label: &str, command_line: impl ToString) -> Entry {
     action(key, label, move || sh(&command_line))
 }
 
+/// Runs a script from this repo's `scripts/` folder with arguments.
+fn script(key: char, label: &str, path: &str, args: &[&str]) -> Entry {
+    let program = settings::repo_dir().join("scripts").join(path);
+    let args: Vec<String> = args.iter().map(|a| a.to_string()).collect();
+    action(key, label, move || {
+        pinnacle_api::process::Command::new(program.to_string_lossy())
+            .args(&args)
+            .spawn();
+    })
+}
+
 /// Follows `path` from the root; `None` if a key does not lead to a submenu.
 pub fn children_at<'a>(root: &'a [Entry], path: &[char]) -> Option<&'a [Entry]> {
     let mut entries = root;
@@ -133,6 +144,21 @@ pub fn build(s: &Settings) -> Vec<Entry> {
                     or_default(&files, "xdg-open \"$HOME\""),
                 ),
                 cmd('l', "App launcher", &s.launcher),
+            ],
+        ),
+        menu(
+            'f',
+            "file",
+            vec![
+                script('f', "Find file → editor", "files/open.sh", &[]),
+                script('r', "Recent files", "files/open.sh", &["--recent"]),
+                script('c', "Edit this config", "files/edit-config.sh", &[]),
+                script(
+                    's',
+                    "Edit local.toml (settings)",
+                    "files/edit-config.sh",
+                    &["--local"],
+                ),
             ],
         ),
         menu(

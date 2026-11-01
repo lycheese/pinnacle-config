@@ -5,10 +5,11 @@
 #   1. installs build and runtime packages with apt
 #   2. installs Rust with rustup if the toolchain is missing or older than 1.88
 #      (the distro's rustc is too old for Pinnacle)
-#   3. clones Pinnacle into ~/src/pinnacle at $PINNACLE_REF and builds it
-#   4. installs the compositor and its session files under /usr/local (sudo)
-#   5. installs the Lua API so `pinnacle client` works (skip with --no-lua)
-#   6. links this repo to ~/.config/pinnacle, pre-builds the config and installs `pctl`
+#   3. installs Helix into ~/.local from its release tarball (scripts/install-helix.sh)
+#   4. clones Pinnacle into ~/src/pinnacle at $PINNACLE_REF and builds it
+#   5. installs the compositor and its session files under /usr/local (sudo)
+#   6. installs the Lua API so `pinnacle client` works (skip with --no-lua)
+#   7. links this repo to ~/.config/pinnacle, pre-builds the config and installs `pctl`
 #
 # Options:
 #   --no-lua          skip the Lua API
@@ -39,7 +40,7 @@ RUNTIME_DEPS=(
     xwayland libvulkan1 mesa-vulkan-drivers
     xdg-desktop-portal-wlr xdg-desktop-portal-gtk gnome-keyring policykit-1-gnome
     alacritty fuzzel waybar mako-notifier brightnessctl playerctl wireplumber
-    fonts-font-awesome grim slurp wl-clipboard libnotify-bin
+    fonts-font-awesome grim slurp wl-clipboard libnotify-bin fd-find
 )
 LUA_DEPS=(lua5.4 liblua5.4-dev luarocks libssl-dev m4)
 
@@ -78,5 +79,8 @@ just_minor="$(just --version 2>/dev/null | sed -nE 's/^just 1\.([0-9]+).*/\1/p')
 if [[ -z "$just_minor" ]] || (( just_minor < 36 )); then
     cargo install --locked just
 fi
+
+step "Installing Helix (user-local, from the release tarball)"
+"$(dirname "${BASH_SOURCE[0]}")/install-helix.sh"
 
 run_common_steps

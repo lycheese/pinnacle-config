@@ -37,12 +37,25 @@ static OPEN: Mutex<Option<LayerHandle<()>>> = Mutex::new(None);
 pub fn setup(s: &Settings) {
     let mut entries = tree::build(s);
     let actions = Arc::new(tree::flatten(&entries));
+
+    let palette_actions = actions.clone();
     entries.insert(
         0,
         tree::action(' ', "Palette: search all actions", move || {
-            palette(&actions)
+            palette(menu_rows(&palette_actions))
         }),
     );
+    if let Some(Entry::Menu { children, .. }) = entries.iter_mut().find(|e| e.key() == 'h') {
+        let actions = actions.clone();
+        children.insert(
+            0,
+            tree::action('k', "Keybindings and menu (search)", move || {
+                let mut rows = bind_rows();
+                rows.extend(menu_rows(&actions));
+                palette(rows)
+            }),
+        );
+    }
     let tree = Arc::new(entries);
 
     input::keybind(s.mod_key, Keysym::space)
@@ -107,15 +120,54 @@ fn close() {
     BindLayer::DEFAULT.enter();
 }
 
-/// Lists every action ("l n   layout › Next layout") in fuzzel and runs the chosen one.
+/// One palette line: keys, description, and what to run when picked (`None`: display only).
+type PaletteRow = (String, String, Option<tree::Run>);
+
+/// Menu actions as palette rows, keys prefixed with "SPC".
+fn menu_rows(actions: &[(String, String, tree::Run)]) -> Vec<PaletteRow> {
+    actions
+        .iter()
+        .map(|(keys, label, run)| (format!("SPC {keys}"), label.clone(), Some(run.clone())))
+        .collect()
+}
+
+/// Compositor keybinds as display-only rows ("Super+Return   Apps › Open a terminal").
+/// Leaves out the `super_grab` catch-all and binds on other layers.
+fn bind_rows() -> Vec<PaletteRow> {
+    input::bind_infos()
+        .filter(|b| b.group != "Super grab" && b.layer.name().is_none())
+        .filter_map(|b| {
+            let input::BindInfoKind::Key { xkb_name, .. } = b.kind else {
+                return None;
+            };
+            let mut keys: Vec<&str> = [
+                (Mod::SUPER, "Super"),
+                (Mod::CTRL, "Ctrl"),
+                (Mod::ALT, "Alt"),
+                (Mod::SHIFT, "Shift"),
+            ]
+            .into_iter()
+            .filter(|(m, _)| b.mods.contains(*m))
+            .map(|(_, name)| name)
+            .collect();
+            keys.push(&xkb_name);
+            let label = match (b.group.as_str(), b.description.as_str()) {
+                ("", d) => d.to_string(),
+                (g, d) => format!("{g} › {d}"),
+            };
+            Some((keys.join("+"), label, None))
+        })
+        .collect()
+}
+
+/// Lists rows in fuzzel and runs the chosen one, if it has an action.
 /// Runs on Tokio's blocking pool, not a plain thread: the action may call the Pinnacle API,
 /// whose sync methods need the runtime (`Handle::current()` panics on a plain thread).
-fn palette(actions: &Arc<Vec<(String, String, tree::Run)>>) {
-    let actions = actions.clone();
+fn palette(rows: Vec<PaletteRow>) {
     pinnacle_api::tokio::task::spawn_blocking(move || {
-        let lines: String = actions
+        let lines: String = rows
             .iter()
-            .map(|(keys, label, _)| format!("{keys:<8} {label}\n"))
+            .map(|(keys, label, _)| format!("{keys:<22} {label}\n"))
             .collect();
         let Ok(mut child) = std::process::Command::new("fuzzel")
             .args(["--dmenu", "--index", "--width", "60"])
@@ -137,7 +189,7 @@ fn palette(actions: &Arc<Vec<(String, String, tree::Run)>>) {
             .trim()
             .parse::<usize>()
             .ok();
-        if let Some((_, _, run)) = chosen.and_then(|i| actions.get(i)) {
+        if let Some((_, _, Some(run))) = chosen.and_then(|i| rows.get(i)) {
             run();
         }
     });
