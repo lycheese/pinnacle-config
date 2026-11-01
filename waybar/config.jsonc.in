@@ -6,10 +6,69 @@
 {
     "height": 30,
     "spacing": 4,
-    "modules-left": [],
+    "modules-left": ["custom/tag-1", "custom/tag-2", "custom/tag-3", "custom/tag-4", "custom/tag-5", "custom/tag-6", "custom/tag-7", "custom/tag-8", "custom/tag-9"],
     "modules-center": ["clock"],
     "modules-right": ["pulseaudio", "network", "cpu", "memory", "temperature", "tray"],
 
+    // Tags: one module per tag so each can be clicked. `pctl tags --watch --tag N` prints a new
+    // line whenever tag N changes; the text is empty (module hidden) unless the tag is active,
+    // shown as [N], or has windows. Click switches the focused output to it. Names match
+    // tag_names in config/src/settings.rs. Waybar 0.9 cannot tell a module which output its bar
+    // is on, so with several outputs a tag counts as active if it is active on any of them.
+    "custom/tag-1": {
+        "exec": "pctl tags --watch --tag 1",
+        "return-type": "json",
+        "restart-interval": 5,
+        "on-click": "pctl tag 1"
+    },
+    "custom/tag-2": {
+        "exec": "pctl tags --watch --tag 2",
+        "return-type": "json",
+        "restart-interval": 5,
+        "on-click": "pctl tag 2"
+    },
+    "custom/tag-3": {
+        "exec": "pctl tags --watch --tag 3",
+        "return-type": "json",
+        "restart-interval": 5,
+        "on-click": "pctl tag 3"
+    },
+    "custom/tag-4": {
+        "exec": "pctl tags --watch --tag 4",
+        "return-type": "json",
+        "restart-interval": 5,
+        "on-click": "pctl tag 4"
+    },
+    "custom/tag-5": {
+        "exec": "pctl tags --watch --tag 5",
+        "return-type": "json",
+        "restart-interval": 5,
+        "on-click": "pctl tag 5"
+    },
+    "custom/tag-6": {
+        "exec": "pctl tags --watch --tag 6",
+        "return-type": "json",
+        "restart-interval": 5,
+        "on-click": "pctl tag 6"
+    },
+    "custom/tag-7": {
+        "exec": "pctl tags --watch --tag 7",
+        "return-type": "json",
+        "restart-interval": 5,
+        "on-click": "pctl tag 7"
+    },
+    "custom/tag-8": {
+        "exec": "pctl tags --watch --tag 8",
+        "return-type": "json",
+        "restart-interval": 5,
+        "on-click": "pctl tag 8"
+    },
+    "custom/tag-9": {
+        "exec": "pctl tags --watch --tag 9",
+        "return-type": "json",
+        "restart-interval": 5,
+        "on-click": "pctl tag 9"
+    },
     "clock": {
         "format": "{:%a %d %b  %H:%M}",
         "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>"
