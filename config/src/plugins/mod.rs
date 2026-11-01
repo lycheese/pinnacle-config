@@ -11,6 +11,7 @@
 mod autostart;
 mod desktop_env;
 mod focus_history;
+mod super_grab;
 mod window_rules;
 
 use crate::settings::Settings;
@@ -21,4 +22,6 @@ pub fn setup(settings: &Settings) {
     window_rules::setup(settings);
     focus_history::setup(settings);
     autostart::setup(settings);
+    // Last: its long section goes to the bottom of the keybind overlay.
+    super_grab::setup(settings);
 }
