@@ -16,7 +16,7 @@ on startup and on every reload; the config talks to the compositor over gRPC.
 | `config/src/plugins/` | Self-contained features, one module each, registered in `plugins/mod.rs` |
 | `settings.toml`, `local.toml` | Documented defaults; gitignored personal overrides. Scripts read them via `eval "$(pctl settings --env)"` |
 | `settings/` | Crate that merges the two, used by the config and pctl |
-| `waybar/config.jsonc.in` | Waybar template, rendered with the settings at config start; restart waybar to apply |
+| `waybar/config.jsonc.in` | Waybar template, rendered with the settings at config start; restart waybar to apply. Tags are `custom/tag-N` modules fed by `pctl tags --watch --tag N`. Its Font Awesome icons are invisible private-use characters: edit with a script and check their count stays the same |
 | `pctl/` | CLI that queries/controls the running session and prints JSON |
 | `scripts/install-fedora.sh`, `scripts/install-popos.sh` | Distro packages and toolchain, then the shared steps |
 | `scripts/lib/common.sh` | Shared install steps: build Pinnacle, install session files, link this repo |
@@ -49,6 +49,10 @@ when running as a session.
 ## Runtime control (IPC)
 
 - `pctl state | windows | focused | binds` – JSON snapshot. Window `id`s are what the action commands take.
+- `pctl tags [--watch] [--tag <name>]` – active and occupied tags as waybar custom-module JSON
+  (`text`/`tooltip`/`class`, plus `outputs` or `tag`). `--watch` prints a line per change: signals
+  for tag switches and window open/close/focus, a 2 s re-check for window moves (no signal).
+  After changing pctl, `cargo install --path pctl` and restart waybar so its watchers use the new binary.
 - `pctl focus|close|float <id>`, `pctl move <id> <tag>`, `pctl tag <name>`, `pctl spawn <cmd>`,
   `pctl mode <output> <w>x<h>@<hz>` (until next login), `pctl reload`.
 - `pinnacle client -e '<lua>'` – the full Lua API for one-off calls not covered by pctl, e.g.

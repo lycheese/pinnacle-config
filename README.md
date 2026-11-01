@@ -8,6 +8,8 @@ existing desktop and is built to be changed live — by hand or by Claude Code.
   rebuilds and restarts it; the compositor and your windows keep running.
 - **Fail-safe:** if the config fails to build or crashes, Pinnacle falls back to its built-in config.
 - **Runtime control:** `pctl` prints the session state as JSON and can focus, move and close windows.
+- **Waybar tags:** the bar shows the active tag as `[2]` and every tag with windows, e.g.
+  `[2] 3 5`; click one to switch to it. Fed live by `pctl tags --watch`.
 - **Extensible:** features live in `config/src/plugins/`, one module each.
 - **Claude Code ready:** `CLAUDE.md` describes the workflow and rules; `.claude/settings.json`
   allows the safe commands and asks before destructive ones.
