@@ -28,6 +28,13 @@ test_save_appends_a_dated_entry_with_tags() {
     assert_contains "$inbox" " #milk"$'\n\nBuy #milk\n\n- window: kitty — shell'
 }
 
+test_save_works_without_tags_under_strict_mode() {
+    load
+    set -o pipefail
+    printf 'no tags here\n' | capture_save
+    assert_contains "$(cat "$INBOX")" "no tags here"
+}
+
 test_save_drops_blank_captures() {
     load
     assert_status 1 capture_save <<<$'  \n\t'

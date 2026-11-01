@@ -21,6 +21,9 @@ on startup and on every reload; the config talks to the compositor over gRPC.
 | `scripts/install-fedora.sh`, `scripts/install-popos.sh` | Distro packages and toolchain, then the shared steps |
 | `scripts/lib/common.sh` | Shared install steps: build Pinnacle, install session files, link this repo |
 | `scripts/nested.sh` | Runs Pinnacle as a window inside the current desktop with this config |
+| `tests/run.sh` | Runs every test (see Testing); CI runs it too |
+| `tests/shell/` | Shell tests: `test_*` functions in `test_*.sh`, run by `tests/shell/run.sh` |
+| `tests/python/` | Python tests (stdlib `unittest`) for the Python scripts |
 
 The compositor source lives in `~/src/pinnacle` (not in this repo).
 
@@ -35,16 +38,49 @@ The compositor source lives in `~/src/pinnacle` (not in this repo).
 
 ## Workflow for config changes
 
-1. Edit the code.
-2. `cargo check --workspace` and `cargo clippy --workspace` – fix all errors and warnings.
-3. `cargo build --package pinnacle-config` – so the reload does not stall on compiling.
-4. `pctl reload` – restarts the config; the compositor and all windows keep running.
-5. Verify with `pctl state` (JSON) that the change did what was intended, e.g. a window rule
+1. Write a failing test, then the code, red/green (see Testing).
+2. `tests/run.sh` – all suites green.
+3. `cargo check --workspace` and `cargo clippy --workspace --all-targets` – fix all errors and warnings.
+4. `cargo build --package pinnacle-config` – so the reload does not stall on compiling.
+5. `pctl reload` – restarts the config; the compositor and all windows keep running.
+6. Verify with `pctl state` (JSON) that the change did what was intended, e.g. a window rule
    applied or tags exist. Tell the user what to try by hand for keybinds.
 
 If the new config panics, Pinnacle falls back to its built-in default config and the error shows
 on the next successful start (Snowcap crash message). Check `journalctl --user -u pinnacle -n 100`
 when running as a session.
+
+## Testing (red/green TDD, mandatory)
+
+Every change is test-driven:
+
+1. **Red:** write a test for the new behaviour first and run it. See it fail, for the reason you
+   expect. A test that passes straight away tests nothing new: fix the test.
+2. **Green:** make the smallest change that makes it pass.
+3. **Refactor** while everything stays green.
+
+Every bug fix starts with a test that reproduces the bug (red) before the fix. Mention the
+red run in the commit message or report. Keep tests fast and hermetic: no running compositor,
+network, real `$HOME` or `local.toml`.
+
+Where tests live:
+- **Rust:** `#[cfg(test)] mod tests` next to the code. `config::Settings::for_test()` gives the
+  `settings.toml` defaults without a compositor; `settings::Settings::parse` takes TOML text.
+  Pull logic out of compositor calls into plain functions so it can be tested (e.g. pctl's
+  `SpinCheck::record`, the waybar JSON builders).
+- **Shell:** `tests/shell/test_*.sh`; each `test_*` function runs in a subshell with a throwaway
+  `$HOME`, state and runtime folder, and settings from `settings.toml` only. Use the
+  `assert_*` helpers in `tests/shell/run.sh`; stub external tools (notify-send, terminals) with
+  small scripts on `$PATH`.
+- **Python:** `tests/python/test_*.py`, stdlib `unittest`; patch out network calls.
+
+Run everything with `tests/run.sh`, or one suite: `cargo test -p <crate>`,
+`PCTL=$PWD/target/debug/pctl tests/shell/run.sh [name-filter]`,
+`python3 -m unittest discover -s tests/python`.
+
+Compositor behaviour (keybinds, focus, rendering, the menu panel) cannot be unit-tested. Test the
+logic behind it, then still do the manual check from the workflow above and tell the user what to
+try by hand.
 
 ## Runtime control (IPC)
 
@@ -85,3 +121,4 @@ shared state lives in `Arc<Mutex<_>>` inside the plugin. Every bind needs `.grou
   without asking: the user may be working in those windows.
 - Do not run `sudo` or the install script without asking.
 - Commit each working change separately with a clear message so it can be reverted.
+- No change without a test first (red/green, see Testing); `tests/run.sh` must pass before a commit.

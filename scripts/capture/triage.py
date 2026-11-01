@@ -109,8 +109,9 @@ def main():
     for i, entry in enumerate(entries):
         d = decisions.get(i, {"action": "keep"})
         if d["action"] == "todo":
-            task = (d.get("task") or entry.splitlines()[0][3:]).strip()
             heading, _, rest = entry.partition("\n")
+            first_line = next((line for line in rest.splitlines() if line.strip()), heading[3:])
+            task = (d.get("task") or first_line).strip()
             todos.append(f"{heading}\n\n- [ ] {task}\n\n{rest.strip()}\n\n")
         elif d["action"] == "archive":
             archived.append(entry.rstrip() + "\n\n")

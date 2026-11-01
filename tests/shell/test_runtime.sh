@@ -22,14 +22,17 @@ test_slugify() {
 
 test_tilde_round_trip() {
     load
-    assert_eq "$(echo "$HOME/a/b" | tilde)" "~/a/b"
-    assert_eq "$(echo "~/a/b" | untilde)" "$HOME/a/b"
+    local short
+    short="$(printf '%s/a/b' '~')" # a literal ~/a/b without shellcheck's SC2088
+    assert_eq "$(echo "$HOME/a/b" | tilde)" "$short"
+    assert_eq "$(echo "$short" | untilde)" "$HOME/a/b"
     assert_eq "$(echo "/etc/$HOME" | tilde)" "/etc/$HOME" "only a leading home folder"
 }
 
 test_in_terminal_fills_in_class_and_title() {
     load
     local log="$SANDBOX/args"
+    # shellcheck disable=SC2016 # $@ belongs to the generated script
     printf '#!/bin/sh\nfor a in "$@"; do echo "$a"; done >"%s"\n' "$log" >"$SANDBOX/term"
     chmod +x "$SANDBOX/term"
     PCFG_APPS_TERMINAL_RUN="$SANDBOX/term --class %c --title %t -e"

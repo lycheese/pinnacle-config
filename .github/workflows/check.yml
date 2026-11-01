@@ -13,7 +13,7 @@ jobs:
       - name: Install toolchain and headers
         run: |
           dnf install -y git rust cargo clippy rustfmt gcc pkgconf-pkg-config \
-            protobuf-compiler wayland-devel libxkbcommon-devel
+            protobuf-compiler wayland-devel libxkbcommon-devel python3 jq util-linux
 
       - uses: actions/checkout@v5
 
@@ -34,6 +34,10 @@ jobs:
           cargo clippy --workspace --all-targets --message-format=short -- -D warnings 2>&1 \
             | tee clippy.txt \
             | sed -nE 's#^([^: ]+\.rs):([0-9]+):([0-9]+): (warning|error): (.*)#::error file=\1,line=\2,col=\3::\5#p'
+
+      # Rust, shell and Python tests; see "Testing" in CLAUDE.md.
+      - name: Test
+        run: tests/run.sh
 
   # Runs each installer's package step on a clean system to catch wrong or missing package names.
   installers:
@@ -78,6 +82,6 @@ jobs:
         shell: bash
         run: |
           set -o pipefail
-          find scripts -name '*.sh' -print0 | xargs -0 shellcheck -x -f gcc \
+          find scripts tests -name '*.sh' -print0 | xargs -0 shellcheck -x -f gcc \
             | tee shellcheck.txt \
             | sed -nE 's#^([^:]+):([0-9]+):([0-9]+): (warning|error|note): (.*)#::error file=\1,line=\2,col=\3::\5#p'

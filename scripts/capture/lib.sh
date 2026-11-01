@@ -40,7 +40,7 @@ capture_snapshot() {
 # Prints the #tags in a capture body (outside ~~~~ blocks), space separated.
 capture_tags() {
     awk '/^~~~~/ { fence = !fence; next } !fence' \
-        | grep -oE '(^|[[:space:]])#[[:alnum:]_-]+' \
+        | { grep -oE '(^|[[:space:]])#[[:alnum:]_-]+' || true; } \
         | sed 's/^[[:space:]]*//' | awk '!seen[$0]++' | paste -sd ' ' -
 }
 
