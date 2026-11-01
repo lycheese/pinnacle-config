@@ -12,7 +12,7 @@ mod autostart;
 mod desktop_env;
 mod focus_history;
 mod refresh_rate;
-mod screenshot;
+pub(crate) mod screenshot;
 mod super_grab;
 mod window_rules;
 

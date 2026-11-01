@@ -12,3 +12,5 @@ license = "MIT"
 # Pinnacle's API is not stable yet; bump both together and read the migration notes:
 # https://github.com/pinnacle-comp/pinnacle/blob/main/wiki/configuration/breaking-changes-and-migrations.md
 pinnacle-api = { git = "https://github.com/pinnacle-comp/pinnacle", tag = "v0.2.4", default-features = false }
+# Snowcap widgets (leader menu popup). Same repo and tag as pinnacle-api.
+snowcap-api = { git = "https://github.com/pinnacle-comp/pinnacle", tag = "v0.2.4" }

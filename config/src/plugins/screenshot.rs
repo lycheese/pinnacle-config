@@ -22,11 +22,14 @@ wl-copy --type image/png < "$file"
 notify-send --icon "$file" "Screenshot saved" "${file#"$HOME"/}, copied to clipboard"
 "#;
 
+/// Starts a screenshot (region or monitor selection). Also used by the leader menu.
+pub fn take() {
+    Command::new("sh").args(["-c", SCRIPT]).spawn();
+}
+
 pub fn setup(settings: &Settings) {
     input::keybind(settings.mod_key, 's')
-        .on_press(|| {
-            Command::new("sh").args(["-c", SCRIPT]).spawn();
-        })
+        .on_press(take)
         .group("Apps")
         .description("Screenshot: drag a region or click a monitor");
 }
