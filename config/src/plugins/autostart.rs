@@ -8,7 +8,12 @@ use pinnacle_api::process::Command;
 use crate::settings::Settings;
 
 const AUTOSTART: &[&[&str]] = &[
-    &["waybar"],
+    // The repo's own waybar config (absolute path, fixed at build time).
+    &[
+        "waybar",
+        "-c",
+        concat!(env!("CARGO_MANIFEST_DIR"), "/../waybar/config.jsonc"),
+    ],
     &["mako"],
     // Polkit agent: Fedora (mate-polkit), then Pop!_OS/Ubuntu (policykit-1-gnome).
     // Only the installed one starts.
