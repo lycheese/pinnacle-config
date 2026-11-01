@@ -5,11 +5,15 @@
 //! (or `tag` with `--tag`) for scripts. With `--watch` a new line is printed whenever the result
 //! changes. Tag switches, window open/close and focus changes arrive as compositor signals; a
 //! window moving to another tag has no signal, so the state is also re-checked every 2 seconds.
+//!
+//! A config reload ends every signal stream, and pinnacle-api v0.2.4 then spins on the closed
+//! stream at full CPU instead of stopping. The watcher notices the CPU use and restarts itself
+//! (same process ID and stdout, so waybar keeps reading), which also connects to the new signals.
 
 use std::collections::HashMap;
 use std::io::Write;
 use std::sync::Arc;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use pinnacle_api::output;
 use pinnacle_api::signal::{OutputSignal, TagSignal, WindowSignal};
@@ -61,6 +65,17 @@ pub async fn run(args: &[String]) -> Result<(), String> {
     let changed = Arc::new(Notify::new());
     connect_signals(&changed);
 
+    // On a plain thread: the spinning tasks hog the async runtime, so a check there never runs.
+    std::thread::spawn(|| {
+        let mut spin = SpinCheck::new();
+        loop {
+            std::thread::sleep(RECHECK);
+            if spin.spinning() {
+                restart();
+            }
+        }
+    });
+
     let mut last = String::new();
     loop {
         let line = render(&snapshot()).to_string();
@@ -72,6 +87,53 @@ pub async fn run(args: &[String]) -> Result<(), String> {
         let _ = timeout(RECHECK, changed.notified()).await;
         sleep(SETTLE).await;
     }
+}
+
+/// Detects the busy loop left behind by a config reload (see the module docs): the process
+/// used more than half a CPU core since the last check, while it should be idle.
+struct SpinCheck {
+    wall: Instant,
+    cpu: Option<Duration>,
+}
+
+impl SpinCheck {
+    fn new() -> Self {
+        Self {
+            wall: Instant::now(),
+            cpu: cpu_time(),
+        }
+    }
+
+    fn spinning(&mut self) -> bool {
+        let wall = self.wall.elapsed();
+        let (before, now) = (self.cpu, cpu_time());
+        *self = Self {
+            wall: Instant::now(),
+            cpu: now,
+        };
+        matches!((before, now), (Some(b), Some(n)) if (n - b) * 2 > wall)
+    }
+}
+
+/// CPU time used by this process (user + system), from /proc/self/stat.
+fn cpu_time() -> Option<Duration> {
+    let stat = std::fs::read_to_string("/proc/self/stat").ok()?;
+    // Fields after the parenthesised command name; utime and stime are fields 14 and 15.
+    let fields: Vec<&str> = stat.rsplit_once(')')?.1.split_whitespace().collect();
+    let ticks: u64 = fields.get(11)?.parse::<u64>().ok()? + fields.get(12)?.parse::<u64>().ok()?;
+    // Linux reports these in USER_HZ, which is 100 on every common architecture.
+    Some(Duration::from_millis(ticks * 10))
+}
+
+/// Replaces this process with a fresh `pctl` run with the same arguments. argv[0] is looked up
+/// on PATH again, so a `cargo install`ed newer pctl takes over too.
+fn restart() -> ! {
+    use std::os::unix::process::CommandExt;
+    let mut args = std::env::args_os();
+    let program = args.next().unwrap_or_else(|| "pctl".into());
+    let err = std::process::Command::new(program).args(args).exec();
+    eprintln!("pctl: could not restart after a config reload: {err}");
+    std::process::exit(1);
 }
 
 fn connect_signals(changed: &Arc<Notify>) {
