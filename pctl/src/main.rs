@@ -17,6 +17,8 @@ use pinnacle_api::tag::{self, TagHandle};
 use pinnacle_api::window::{self, WindowHandle};
 use serde_json::{Value, json};
 
+mod tags;
+
 const SOCKET_ENV: &str = "PINNACLE_GRPC_SOCKET";
 
 const USAGE: &str = "\
@@ -30,6 +32,10 @@ QUERIES (print JSON):
     windows               Windows only
     focused               The focused window, or null
     binds                 Key and mouse binds with mods, group and description
+    tags [--watch] [--tag <name>]
+                          Active tags and tags with windows, as waybar custom-module JSON
+                          (one line; --watch prints a new line on every change, --tag
+                          reports one tag, empty text if it is neither active nor used)
 
 ACTIONS:
     focus <window-id>     Focus a window (switches to its tag if hidden)
@@ -117,12 +123,16 @@ fn find_socket() -> Option<PathBuf> {
 fn run(args: Vec<String>) -> Result<(), String> {
     // The API's sync methods need a multi-threaded Tokio runtime (they use `block_in_place`).
     let runtime = pinnacle_api::tokio::runtime::Builder::new_multi_thread()
+        .worker_threads(2)
         .enable_all()
         .build()
         .map_err(|e| format!("could not start async runtime: {e}"))?;
 
     runtime.block_on(async move {
         connect_quietly().await?;
+        if args[0] == "tags" {
+            return tags::run(&args[1..]).await;
+        }
         dispatch(&args)
     })
 }
