@@ -6,7 +6,8 @@
 #   2. clones Pinnacle into ~/src/pinnacle at $PINNACLE_REF and builds it
 #   3. installs the compositor and its session files under /usr/local (sudo)
 #   4. installs the Lua API so `pinnacle client` works (skip with --no-lua)
-#   5. links this repo to ~/.config/pinnacle, pre-builds the config and installs `pctl`
+#   5. links this repo to ~/.config/pinnacle, pre-builds the config, installs `pctl`, creates
+#      the notes and agent folders and installs Claude Code (user-local)
 #
 # Options:
 #   --no-lua          skip the Lua API
@@ -17,7 +18,7 @@
 set -euo pipefail
 # shellcheck source=scripts/lib/common.sh
 source "$(dirname "${BASH_SOURCE[0]}")/lib/common.sh"
-parse_args "$(sed -n '2,16p' "$0" | sed 's/^# \{0,1\}//')" "$@"
+parse_args "$(sed -n '2,17p' "$0" | sed 's/^# \{0,1\}//')" "$@"
 
 BUILD_DEPS=(
     rust cargo clippy rustfmt gcc pkgconf-pkg-config just git protobuf-compiler

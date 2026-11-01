@@ -9,7 +9,8 @@
 #   4. clones Pinnacle into ~/src/pinnacle at $PINNACLE_REF and builds it
 #   5. installs the compositor and its session files under /usr/local (sudo)
 #   6. installs the Lua API so `pinnacle client` works (skip with --no-lua)
-#   7. links this repo to ~/.config/pinnacle, pre-builds the config and installs `pctl`
+#   7. links this repo to ~/.config/pinnacle, pre-builds the config, installs `pctl`, creates
+#      the notes and agent folders and installs Claude Code (user-local)
 #
 # Options:
 #   --no-lua          skip the Lua API
@@ -20,7 +21,7 @@
 set -euo pipefail
 # shellcheck source=scripts/lib/common.sh
 source "$(dirname "${BASH_SOURCE[0]}")/lib/common.sh"
-parse_args "$(sed -n '2,18p' "$0" | sed 's/^# \{0,1\}//')" "$@"
+parse_args "$(sed -n '2,19p' "$0" | sed 's/^# \{0,1\}//')" "$@"
 
 # Pop!_OS 22.04 and other older bases lack libdisplay-info and recent Wayland libraries.
 # shellcheck disable=SC1091

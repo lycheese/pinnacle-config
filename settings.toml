@@ -63,6 +63,10 @@ dir = "~/agent"
 backend = "claude"
 # Folders searched for git repos by Menu → a f (new feature).
 repo_roots = ["~/dev_local", "~/src"]
+# Claude Code command. Profiles (Menu → a p / a n) are folders here, each a separate
+# CLAUDE_CONFIG_DIR with its own login; the "default" profile is ~/.claude.
+command = "claude"
+profiles_dir = "~/.config/claude-profiles"
 
 [local_ai]
 # Ollama server and model used by the local backend and by inbox triage.

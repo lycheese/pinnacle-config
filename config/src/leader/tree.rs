@@ -126,6 +126,7 @@ pub fn build(s: &Settings) -> Vec<Entry> {
     let terminal = s.terminal.clone();
     let browser = s.file.str("apps.browser", "");
     let files = s.file.str("apps.file_manager", "");
+    let agent_dir = s.file.path("agent.dir", "~/agent").display().to_string();
 
     vec![
         script('C', "Capture a thought", "capture/quick.sh", &[]),
@@ -169,6 +170,50 @@ pub fn build(s: &Settings) -> Vec<Entry> {
                 script('c', "Capture in Helix", "capture/edit.sh", &[]),
                 script('i', "Open inbox", "capture/search.sh", &["--open"]),
                 script('s', "Search captures", "capture/search.sh", &[]),
+            ],
+        ),
+        menu(
+            'a',
+            "agent",
+            vec![
+                script('r', "Research thread", "agent/thread.sh", &["research"]),
+                script(
+                    'f',
+                    "Feature in a repo (plan mode)",
+                    "agent/feature.sh",
+                    &[],
+                ),
+                script('g', "HTML slides", "agent/thread.sh", &["slides"]),
+                script(
+                    'w',
+                    "Ask about the window",
+                    "agent/handoff.sh",
+                    &["--window"],
+                ),
+                script('s', "Ask about a region", "agent/handoff.sh", &["--region"]),
+                script('a', "Ask about a file", "agent/handoff.sh", &["--file"]),
+                script(
+                    'c',
+                    "Ask about the clipboard",
+                    "agent/handoff.sh",
+                    &["--clipboard"],
+                ),
+                script(
+                    'p',
+                    "Switch Claude profile",
+                    "agent/profile.sh",
+                    &["--switch"],
+                ),
+                script('n', "New Claude profile", "agent/profile.sh", &["--new"]),
+                cmd(
+                    'o',
+                    "Open agent folder",
+                    format!(
+                        "mkdir -p {dir} && {opener} {dir}",
+                        dir = shell_quote(&agent_dir),
+                        opener = or_default(&files, "xdg-open"),
+                    ),
+                ),
             ],
         ),
         menu(
@@ -257,6 +302,11 @@ fn or_default(setting: &str, default: &str) -> String {
     } else {
         setting.to_string()
     }
+}
+
+/// Quotes a string for `sh -c`.
+fn shell_quote(s: &str) -> String {
+    format!("'{}'", s.replace('\'', r"'\''"))
 }
 
 fn show_overlay() {

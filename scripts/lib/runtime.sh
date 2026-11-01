@@ -45,6 +45,19 @@ open_in_editor() {
     in_terminal pinnacle-editor "${1##*/}" "${editor[@]}" "$@"
 }
 
+# Asks for one line of text in fuzzel; fails on Escape or empty input. Extra args go to fuzzel.
+ask_line() {
+    local line
+    line="$(fuzzel --dmenu --lines 0 --width 70 "$@" </dev/null)" || return 1
+    [[ -n "${line//[[:space:]]/}" ]] || return 1
+    printf '%s\n' "$line"
+}
+
+# Turns text into a short folder name: "Fix the login bug!" → fix-the-login-bug
+slugify() {
+    tr '[:upper:]' '[:lower:]' <<<"$1" | sed -E 's/[^a-z0-9]+/-/g; s/^-+//' | cut -c1-40 | sed -E 's/-+$//'
+}
+
 # One-line fuzzel menu over stdin; prints the chosen line. Extra args go to fuzzel.
 choose() { fuzzel --dmenu "$@"; }
 

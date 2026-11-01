@@ -133,6 +133,32 @@ build_config_and_pctl() {
     esac
 }
 
+# Claude Code for the agent menu (Menu → a), user-local in ~/.local, from the official
+# installer. Skipped if `claude` is already on PATH.
+install_claude_code() {
+    step "Installing Claude Code (agent menu)"
+    if command -v claude >/dev/null 2>&1; then
+        echo "Already installed: $(claude --version 2>/dev/null)"
+        return
+    fi
+    curl -fsSL https://claude.ai/install.sh | bash
+    echo "Log in once by running \`claude\` in a terminal (or Menu → a n for an extra profile)."
+}
+
+# The folders from settings: notes (captures) and agent (research, slides, hand-offs).
+create_folders() {
+    step "Creating the notes and agent folders"
+    local dir
+    for dir in "$(pctl_setting notes.dir)" "$(pctl_setting agent.dir)"; do
+        [[ -n "$dir" ]] && mkdir -p "$dir" && echo "$dir"
+    done
+}
+
+# Reads one setting with the freshly installed pctl.
+pctl_setting() {
+    PINNACLE_CONFIG_REPO="$CONFIG_REPO" "$HOME/.cargo/bin/pctl" settings get "$1"
+}
+
 # Everything after packages and toolchain.
 run_common_steps() {
     require_rust
@@ -142,6 +168,8 @@ run_common_steps() {
     link_config
     mask_session_units
     build_config_and_pctl
+    create_folders
+    install_claude_code
 
     step "Done"
     echo "Try it nested first:  $CONFIG_REPO/scripts/nested.sh"
