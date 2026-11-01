@@ -48,7 +48,7 @@ when running as a session.
 
 - `pctl state | windows | focused | binds` – JSON snapshot. Window `id`s are what the action commands take.
 - `pctl focus|close|float <id>`, `pctl move <id> <tag>`, `pctl tag <name>`, `pctl spawn <cmd>`,
-  `pctl reload`.
+  `pctl mode <output> <w>x<h>@<hz>` (until next login), `pctl reload`.
 - `pinnacle client -e '<lua>'` – the full Lua API for one-off calls not covered by pctl, e.g.
   `pinnacle client -e 'print(Output.get_focused().name)'`. Only available if the Lua API was
   installed.

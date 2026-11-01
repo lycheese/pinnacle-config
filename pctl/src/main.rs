@@ -37,6 +37,8 @@ ACTIONS:
     float <window-id>     Toggle floating
     move <window-id> <tag>  Move a window to a tag
     tag <name>            Switch the focused output to a tag
+    mode <output> <w>x<h>@<hz>  Set an output's mode, e.g. `mode DP-3 1920x1080@144`
+                          (until next login; picks the closest listed refresh rate)
     spawn <cmd> [args..]  Start a program inside the session
     reload                Restart the config (rebuilds it via cargo run)
 ";
@@ -159,6 +161,7 @@ fn dispatch(args: &[String]) -> Result<(), String> {
             win.move_to_tag(&tag);
         }
         "tag" => find_tag(arg(1, "tag")?)?.switch_to(),
+        "mode" => set_mode(arg(1, "output")?, arg(2, "mode")?)?,
         "spawn" => {
             let program = arg(1, "cmd")?;
             Command::new(program)
@@ -169,6 +172,25 @@ fn dispatch(args: &[String]) -> Result<(), String> {
         "reload" => pinnacle_api::pinnacle::reload_config(),
         other => return Err(format!("unknown command `{other}` (try `pctl help`)")),
     }
+    Ok(())
+}
+
+/// Parses `WxH@HZ` and sets the listed mode whose refresh rate is closest to HZ.
+fn set_mode(name: &str, spec: &str) -> Result<(), String> {
+    let bad = || format!("`{spec}` is not WxH@HZ, e.g. 1920x1080@144");
+    let (size, hz) = spec.split_once('@').ok_or_else(bad)?;
+    let (w, h) = size.split_once('x').ok_or_else(bad)?;
+    let (w, h): (u32, u32) = (w.parse().map_err(|_| bad())?, h.parse().map_err(|_| bad())?);
+    let mhz = (hz.parse::<f64>().map_err(|_| bad())? * 1000.0) as u32;
+
+    let out = output::get_by_name(name).ok_or_else(|| format!("no output named {name}"))?;
+    let mode = out
+        .modes()
+        .filter(|m| m.size.w == w && m.size.h == h)
+        .min_by_key(|m| m.refresh_rate_mhz.abs_diff(mhz))
+        .ok_or_else(|| format!("{name} has no {w}x{h} mode"))?;
+    out.set_mode(w, h, mode.refresh_rate_mhz);
+    print_json(mode_json(&mode));
     Ok(())
 }
 
@@ -199,12 +221,18 @@ fn output_json(o: &OutputHandle) -> Value {
         "scale": o.scale(),
         "loc": o.loc().map(|p| json!({"x": p.x, "y": p.y})),
         "logical_size": o.logical_size().map(|s| json!({"w": s.w, "h": s.h})),
+        "mode": o.current_mode().map(|m| mode_json(&m)),
+        "modes": o.modes().map(|m| mode_json(&m)).collect::<Vec<_>>(),
         "tags": o.tags().map(|t| json!({
             "id": t.id(),
             "name": t.name(),
             "active": t.active(),
         })).collect::<Vec<_>>(),
     })
+}
+
+fn mode_json(m: &output::Mode) -> Value {
+    json!({"w": m.size.w, "h": m.size.h, "refresh_mhz": m.refresh_rate_mhz})
 }
 
 fn window_json(w: &WindowHandle) -> Value {
