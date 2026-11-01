@@ -30,8 +30,10 @@ The compositor source lives in `~/src/pinnacle` (not in this repo).
 ## API reference
 
 - Rust API docs: https://pinnacle-comp.github.io/rust-reference/main
-- The API is pinned to tag `v0.2.4` in `Cargo.toml`. The exact source is in
-  `~/.cargo/git/checkouts/pinnacle-*/` after a build, or in `~/src/pinnacle/api/rust/src`.
+- The API is pinned in `Cargo.toml` to the `fix/signal-stream-end` branch of the fork
+  github.com/lycheese/pinnacle: v0.2.4 plus a layer-shell fix and an API signal-loop fix, with
+  the same protocol as v0.2.4. The exact source is in `~/.cargo/git/checkouts/pinnacle-*/`
+  after a build, or in `~/src/pinnacle/api/rust/src` on that branch.
   **Read the source there before using an API function you have not seen in this repo**;
   the API is pre-1.0 and online examples are often outdated.
 - Upstream reference config: `~/src/pinnacle/api/rust/examples/default_config/main.rs`.
@@ -115,8 +117,8 @@ shared state lives in `Arc<Mutex<_>>` inside the plugin. Every bind needs `.grou
 ## Rules
 
 - Never remove or rebind the quit (`Mod+Shift+Q`, `Mod+Ctrl+Shift+Q`) or reload (`Mod+Ctrl+R`) binds.
-- Do not change `pinnacle.toml`'s `run` command or the `pinnacle-api` tag without asking; the tag
-  must match the installed compositor version.
+- Do not change `pinnacle.toml`'s `run` command or the `pinnacle-api` pin without asking; it
+  must speak the same protocol as the installed compositor.
 - Do not run `pctl close`, `pinnacle client` calls that quit, or anything that kills the session
   without asking: the user may be working in those windows.
 - Do not run `sudo` or the install script without asking.

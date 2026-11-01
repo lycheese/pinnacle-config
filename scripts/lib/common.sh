@@ -7,7 +7,8 @@
 #
 # Environment overrides:
 #   PINNACLE_REPO  git URL to build from (set this to your fork once you hack on the compositor)
-#   PINNACLE_REF   tag/branch/commit; must match the pinnacle-api tag in Cargo.toml
+#   PINNACLE_REF   tag/branch/commit; must speak the same protocol as the pinnacle-api pin in
+#                  Cargo.toml (v0.2.4, or the fork's fix/signal-stream-end branch it points at)
 #   PINNACLE_SRC   checkout location (default ~/src/pinnacle)
 
 PINNACLE_REPO="${PINNACLE_REPO:-https://github.com/pinnacle-comp/pinnacle.git}"

@@ -8,9 +8,13 @@ rust-version = "1.88"
 license = "MIT"
 
 [workspace.dependencies]
-# Keep this tag identical to the compositor version you built (see scripts/install-fedora.sh).
-# Pinnacle's API is not stable yet; bump both together and read the migration notes:
+# Pinnacle v0.2.4 plus two fixes, from the fork's fix/signal-stream-end branch:
+#   - layer surfaces get their real size in the first configure (no launcher flicker; compositor)
+#   - API signal streams stop spinning at full CPU after a config reload and resubscribe (API)
+# The protocol is unchanged from v0.2.4, so this works with a v0.2.4 compositor too. When
+# upstream releases these fixes, go back to a pinnacle-comp tag that matches the compositor
+# you built (see scripts/lib/common.sh) and read the migration notes:
 # https://github.com/pinnacle-comp/pinnacle/blob/main/wiki/configuration/breaking-changes-and-migrations.md
-pinnacle-api = { git = "https://github.com/pinnacle-comp/pinnacle", tag = "v0.2.4", default-features = false }
-# Snowcap widgets (leader menu popup). Same repo and tag as pinnacle-api.
-snowcap-api = { git = "https://github.com/pinnacle-comp/pinnacle", tag = "v0.2.4" }
+pinnacle-api = { git = "https://github.com/lycheese/pinnacle", branch = "fix/signal-stream-end", default-features = false }
+# Snowcap widgets (leader menu popup). Same repo and branch as pinnacle-api.
+snowcap-api = { git = "https://github.com/lycheese/pinnacle", branch = "fix/signal-stream-end" }

@@ -6,9 +6,10 @@
 //! changes. Tag switches, window open/close and focus changes arrive as compositor signals; a
 //! window moving to another tag has no signal, so the state is also re-checked every 2 seconds.
 //!
-//! A config reload ends every signal stream, and pinnacle-api v0.2.4 then spins on the closed
-//! stream at full CPU instead of stopping. The watcher notices the CPU use and restarts itself
-//! (same process ID and stdout, so waybar keeps reading), which also connects to the new signals.
+//! A config reload ends every signal stream, and upstream pinnacle-api v0.2.4 then spins on the
+//! closed stream at full CPU instead of stopping. The watcher notices the CPU use and restarts
+//! itself (same process ID and stdout, so waybar keeps reading), which also connects to the new
+//! signals. The fork branch pinned in Cargo.toml fixes the API; this stays as a safety net.
 
 use std::collections::HashMap;
 use std::io::Write;

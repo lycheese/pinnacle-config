@@ -613,7 +613,7 @@ checksum = "a89322df9ebe1c1578d689c92318e070967d1042b512afbe49518723f4e6d5cd"
 [[package]]
 name = "pinnacle-api"
 version = "0.2.0"
-source = "git+https://github.com/pinnacle-comp/pinnacle?tag=v0.2.4#c41cae17df9f2d7acb3f51d6309952ad45687cd1"
+source = "git+https://github.com/lycheese/pinnacle?branch=fix%2Fsignal-stream-end#12b95ececfb3f4b2ee9016921cb55b440fa98099"
 dependencies = [
  "bitflags",
  "futures",
@@ -633,7 +633,7 @@ dependencies = [
 [[package]]
 name = "pinnacle-api-defs"
 version = "0.0.1"
-source = "git+https://github.com/pinnacle-comp/pinnacle?tag=v0.2.4#c41cae17df9f2d7acb3f51d6309952ad45687cd1"
+source = "git+https://github.com/lycheese/pinnacle?branch=fix%2Fsignal-stream-end#12b95ececfb3f4b2ee9016921cb55b440fa98099"
 dependencies = [
  "prost",
  "tonic",
@@ -885,7 +885,7 @@ checksum = "d0d5d4b1981b8bbbb7aed204cae5726d683d5d6ac7e74ec54122ea28f315e7c8"
 [[package]]
 name = "snowcap-api"
 version = "0.1.0"
-source = "git+https://github.com/pinnacle-comp/pinnacle?tag=v0.2.4#c41cae17df9f2d7acb3f51d6309952ad45687cd1"
+source = "git+https://github.com/lycheese/pinnacle?branch=fix%2Fsignal-stream-end#12b95ececfb3f4b2ee9016921cb55b440fa98099"
 dependencies = [
  "from_variants",
  "futures",
@@ -904,7 +904,7 @@ dependencies = [
 [[package]]
 name = "snowcap-api-defs"
 version = "0.1.0"
-source = "git+https://github.com/pinnacle-comp/pinnacle?tag=v0.2.4#c41cae17df9f2d7acb3f51d6309952ad45687cd1"
+source = "git+https://github.com/lycheese/pinnacle?branch=fix%2Fsignal-stream-end#12b95ececfb3f4b2ee9016921cb55b440fa98099"
 dependencies = [
  "prost",
  "tonic",
