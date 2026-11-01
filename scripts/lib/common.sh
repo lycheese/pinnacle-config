@@ -77,9 +77,23 @@ install_session_files() {
 install_lua_api() {
     [[ $WITH_LUA == 1 ]] || return 0
     step "Installing the Lua API for \`pinnacle client\`"
-    if ! (cd "$PINNACLE_SRC" && just install); then
+    # The justfile sets LUA_PATH to luarocks' user paths plus our LUA_PATH. Without `;;` (Lua's
+    # default path) luarocks cannot load its own modules from /usr/share/lua.
+    if ! (cd "$PINNACLE_SRC" && LUA_PATH="${LUA_PATH:-};;" LUA_CPATH="${LUA_CPATH:-};;" just install); then
         echo "Lua API install failed; pctl still works. Re-run later or use --no-lua." >&2
+        return 0
     fi
+
+    # `pinnacle client` runs `lua` with the inherited LUA_PATH, so the session needs the
+    # luarocks user tree. environment.d reaches the systemd user manager, which starts Pinnacle.
+    local envfile="$HOME/.config/environment.d/50-pinnacle-lua.conf"
+    mkdir -p "$(dirname "$envfile")"
+    cat > "$envfile" <<'EOF'
+# Written by pinnacle-config's installer: lets `pinnacle client` find the Lua API.
+LUA_PATH=${HOME}/.luarocks/share/lua/5.4/?.lua;${HOME}/.luarocks/share/lua/5.4/?/init.lua;;
+LUA_CPATH=${HOME}/.luarocks/lib/lua/5.4/?.so;;
+EOF
+    echo "Wrote $envfile (takes effect at next login)."
 }
 
 link_config() {

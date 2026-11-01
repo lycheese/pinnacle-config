@@ -48,6 +48,12 @@ pkgs=("${BUILD_DEPS[@]}" "${RUNTIME_DEPS[@]}")
 sudo apt-get update
 sudo apt-get install -y "${pkgs[@]}"
 
+# luarocks pulls in lua5.1, which then wins the `lua` alternative. `pinnacle client` runs plain
+# `lua` and the API is built for 5.4.
+if [[ $WITH_LUA == 1 ]]; then
+    sudo update-alternatives --set lua-interpreter /usr/bin/lua5.4
+fi
+
 [[ $PACKAGES_ONLY == 1 ]] && exit 0
 
 # ---------------------------------------------------------------------------
