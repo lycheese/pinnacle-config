@@ -10,6 +10,7 @@
 use std::path::PathBuf;
 use std::process::ExitCode;
 
+use pinnacle_api::input::{BindInfo, BindInfoKind};
 use pinnacle_api::output::{self, OutputHandle};
 use pinnacle_api::process::Command;
 use pinnacle_api::tag::{self, TagHandle};
@@ -28,6 +29,7 @@ QUERIES (print JSON):
     state                 Outputs, tags and windows
     windows               Windows only
     focused               The focused window, or null
+    binds                 Key and mouse binds with mods, group and description
 
 ACTIONS:
     focus <window-id>     Focus a window (switches to its tag if hidden)
@@ -134,6 +136,11 @@ fn dispatch(args: &[String]) -> Result<(), String> {
                 .map(|w| window_json(&w))
                 .unwrap_or(Value::Null),
         ),
+        "binds" => print_json(Value::Array(
+            pinnacle_api::input::bind_infos()
+                .map(|b| bind_json(&b))
+                .collect(),
+        )),
         "focus" => {
             let win = find_window(arg(1, "window-id")?)?;
             if !win.is_on_active_tag()
@@ -214,6 +221,22 @@ fn window_json(w: &WindowHandle) -> Value {
         "tags": w.tags().map(|t| t.name()).collect::<Vec<_>>(),
         "loc": w.loc().map(|p| json!({"x": p.x, "y": p.y})),
         "size": w.size().map(|s| json!({"w": s.w, "h": s.h})),
+    })
+}
+
+fn bind_json(b: &BindInfo) -> Value {
+    let (kind, key) = match &b.kind {
+        BindInfoKind::Key { xkb_name, .. } => ("key", xkb_name.clone()),
+        BindInfoKind::Mouse { button } => ("mouse", format!("{button:?}")),
+    };
+    json!({
+        "kind": kind,
+        "key": key,
+        // pinnacle-api v0.2.4 reports ignored ISO level 3/5 mods as required ones.
+        "mods": b.mods.iter_names().map(|(name, _)| name).collect::<Vec<_>>(),
+        "layer": b.layer.name(),
+        "group": b.group,
+        "description": b.description,
     })
 }
 
