@@ -111,12 +111,12 @@ fn windows(s: &Settings) {
         .group("Window")
         .description("Toggle maximized");
 
-    // Vim-style focus and swap. Rebind these keys if they clash with your layout.
+    // Arrow keys: the same on every layout (Neo Bone, Miryoku's nav layer).
     let directions = [
-        ('h', Direction::Left, "left"),
-        ('j', Direction::Down, "down"),
-        ('k', Direction::Up, "up"),
-        ('l', Direction::Right, "right"),
+        (Keysym::Left, Direction::Left, "left"),
+        (Keysym::Down, Direction::Down, "down"),
+        (Keysym::Up, Direction::Up, "up"),
+        (Keysym::Right, Direction::Right, "right"),
     ];
 
     for (key, dir, name) in directions {
@@ -156,7 +156,7 @@ fn apps(s: &Settings) {
         .group("Apps")
         .description("Open a terminal");
 
-    input::keybind(m, 'd')
+    input::keybind(m, 'r')
         .on_press(move || {
             Command::new(launcher[0]).args(&launcher[1..]).spawn();
         })
