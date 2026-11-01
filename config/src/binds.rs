@@ -101,16 +101,6 @@ fn windows(s: &Settings) {
         .group("Window")
         .description("Toggle fullscreen");
 
-    input::keybind(m, 'm')
-        .on_press(|| {
-            if let Some(win) = window::get_focused() {
-                win.toggle_maximized();
-                win.raise();
-            }
-        })
-        .group("Window")
-        .description("Toggle maximized");
-
     // Arrow keys: the same on every layout (Neo Bone, Miryoku's nav layer).
     let directions = [
         (Keysym::Left, Direction::Left, "left"),
