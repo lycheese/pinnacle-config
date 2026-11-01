@@ -33,7 +33,8 @@ test_in_terminal_fills_in_class_and_title() {
     load
     local log="$SANDBOX/args"
     # shellcheck disable=SC2016 # $@ belongs to the generated script
-    printf '#!/bin/sh\nfor a in "$@"; do echo "$a"; done >"%s"\n' "$log" >"$SANDBOX/term"
+    # printf, not echo: bash's echo (Fedora's /bin/sh) would swallow the -e argument.
+    printf '#!/bin/sh\nprintf "%%s\\n" "$@" >"%s"\n' "$log" >"$SANDBOX/term"
     chmod +x "$SANDBOX/term"
     PCFG_APPS_TERMINAL_RUN="$SANDBOX/term --class %c --title %t -e"
     in_terminal my-class "A title" echo "two words"
