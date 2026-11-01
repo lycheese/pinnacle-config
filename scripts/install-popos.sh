@@ -15,13 +15,14 @@
 # Options:
 #   --no-lua          skip the Lua API
 #   --packages-only   only install packages, then stop
+#   --with-local-ai   also install Ollama and the local model (scripts/install-local-ai.sh)
 #
 # Overrides (PINNACLE_REPO, PINNACLE_REF, PINNACLE_SRC) are described in scripts/lib/common.sh.
 
 set -euo pipefail
 # shellcheck source=scripts/lib/common.sh
 source "$(dirname "${BASH_SOURCE[0]}")/lib/common.sh"
-parse_args "$(sed -n '2,19p' "$0" | sed 's/^# \{0,1\}//')" "$@"
+parse_args "$(sed -n '2,20p' "$0" | sed 's/^# \{0,1\}//')" "$@"
 
 # Pop!_OS 22.04 and other older bases lack libdisplay-info and recent Wayland libraries.
 # shellcheck disable=SC1091

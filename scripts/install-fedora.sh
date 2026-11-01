@@ -12,13 +12,14 @@
 # Options:
 #   --no-lua          skip the Lua API
 #   --packages-only   only install packages, then stop
+#   --with-local-ai   also install Ollama and the local model (scripts/install-local-ai.sh)
 #
 # Overrides (PINNACLE_REPO, PINNACLE_REF, PINNACLE_SRC) are described in scripts/lib/common.sh.
 
 set -euo pipefail
 # shellcheck source=scripts/lib/common.sh
 source "$(dirname "${BASH_SOURCE[0]}")/lib/common.sh"
-parse_args "$(sed -n '2,17p' "$0" | sed 's/^# \{0,1\}//')" "$@"
+parse_args "$(sed -n '2,18p' "$0" | sed 's/^# \{0,1\}//')" "$@"
 
 BUILD_DEPS=(
     rust cargo clippy rustfmt gcc pkgconf-pkg-config just git protobuf-compiler

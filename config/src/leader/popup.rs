@@ -48,8 +48,24 @@ impl Program for Popup {
         };
 
         let mut crumb = String::from("SPC ›");
+        let mut hint = None;
+        let mut level: &[Entry] = &self.tree;
         for key in &nav.path {
-            crumb.push_str(&format!(" {} ›", key_name(*key)));
+            crumb.push_str(&format!(" {}", key_name(*key)));
+            if let Some(Entry::Menu {
+                children,
+                badge,
+                hint: menu_hint,
+                ..
+            }) = level.iter().find(|e| e.key() == *key)
+            {
+                if let Some(text) = badge.as_ref().and_then(|b| b()) {
+                    crumb.push_str(&format!(" [{text}]"));
+                }
+                hint = menu_hint.clone();
+                level = children;
+            }
+            crumb.push_str(" ›");
         }
         if let Some(note) = &nav.note {
             crumb.push_str(&format!("   {note}"));
@@ -63,11 +79,15 @@ impl Program for Popup {
 
         let entries = children_at(&self.tree, &nav.path).unwrap_or_default();
         let mut columns = Row::new().spacing(24.0);
+        let entries: Vec<&Entry> = entries
+            .iter()
+            .filter(|e| !matches!(e, Entry::Action { hidden: true, .. }))
+            .collect();
         for chunk in entries.chunks(ROWS) {
             let mut column = Column::new()
                 .spacing(4.0)
                 .width(Length::Fixed(COLUMN_WIDTH));
-            for entry in chunk {
+            for &entry in chunk {
                 let (label, color) = match entry {
                     Entry::Menu { label, .. } => (format!("+{label}"), [0.95, 0.75, 0.45]),
                     Entry::Action { label, .. } => (label.clone(), [0.9, 0.9, 0.9]),
@@ -85,9 +105,15 @@ impl Program for Popup {
             columns = columns.push(column);
         }
 
-        let body = Column::new().spacing(10.0).push(header).push(columns).push(
-            Text::new("Esc close · Backspace up").style(style([0.5, 0.5, 0.55]).pixels(12.0)),
-        );
+        let mut footer = String::from("Esc close · Backspace up");
+        if let Some(hint) = hint {
+            footer.push_str(&format!(" · {hint}"));
+        }
+        let body = Column::new()
+            .spacing(10.0)
+            .push(header)
+            .push(columns)
+            .push(Text::new(footer).style(style([0.5, 0.5, 0.55]).pixels(12.0)));
 
         Container::new(body)
             .width(Length::Fixed(self.width))

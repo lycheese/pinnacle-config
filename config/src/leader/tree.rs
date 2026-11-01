@@ -14,17 +14,24 @@ use crate::layouts;
 use crate::settings::{Settings, sh};
 
 pub type Run = Arc<dyn Fn() + Send + Sync>;
+/// Text shown in brackets after a menu's key in the breadcrumb, computed on every redraw.
+pub type Badge = Arc<dyn Fn() -> Option<String> + Send + Sync>;
 
 pub enum Entry {
     Menu {
         key: char,
         label: String,
         children: Vec<Entry>,
+        badge: Option<Badge>,
+        /// Shown in the panel's footer while this menu is open.
+        hint: Option<String>,
     },
     Action {
         key: char,
         label: String,
         run: Run,
+        /// Works and shows up in the palette, but is not listed in the panel.
+        hidden: bool,
     },
 }
 
@@ -34,6 +41,27 @@ impl Entry {
             Entry::Menu { key, .. } | Entry::Action { key, .. } => *key,
         }
     }
+
+    fn with_badge(mut self, f: impl Fn() -> Option<String> + Send + Sync + 'static) -> Self {
+        if let Entry::Menu { badge, .. } = &mut self {
+            *badge = Some(Arc::new(f));
+        }
+        self
+    }
+
+    fn with_hint(mut self, text: &str) -> Self {
+        if let Entry::Menu { hint, .. } = &mut self {
+            *hint = Some(text.to_string());
+        }
+        self
+    }
+
+    fn hidden(mut self) -> Self {
+        if let Entry::Action { hidden, .. } = &mut self {
+            *hidden = true;
+        }
+        self
+    }
 }
 
 pub fn menu(key: char, label: &str, children: Vec<Entry>) -> Entry {
@@ -41,6 +69,8 @@ pub fn menu(key: char, label: &str, children: Vec<Entry>) -> Entry {
         key,
         label: label.to_string(),
         children,
+        badge: None,
+        hint: None,
     }
 }
 
@@ -49,6 +79,7 @@ pub fn action(key: char, label: &str, run: impl Fn() + Send + Sync + 'static) ->
         key,
         label: label.to_string(),
         run: Arc::new(run),
+        hidden: false,
     }
 }
 
@@ -127,6 +158,7 @@ pub fn build(s: &Settings) -> Vec<Entry> {
     let browser = s.file.str("apps.browser", "");
     let files = s.file.str("apps.file_manager", "");
     let agent_dir = s.file.path("agent.dir", "~/agent").display().to_string();
+    let default_backend = s.file.str("agent.backend", "claude");
 
     vec![
         script('C', "Capture a thought", "capture/quick.sh", &[]),
@@ -171,12 +203,19 @@ pub fn build(s: &Settings) -> Vec<Entry> {
                 script('c', "Capture in Helix", "capture/edit.sh", &[]),
                 script('i', "Open inbox", "capture/search.sh", &["--open"]),
                 script('s', "Search captures", "capture/search.sh", &[]),
+                script('t', "Triage inbox (local model)", "capture/triage.sh", &[]),
             ],
         ),
         menu(
             'a',
             "agent",
             vec![
+                script(
+                    'b',
+                    "Toggle backend (Claude / local)",
+                    "agent/backend.sh",
+                    &["--toggle"],
+                ),
                 script('r', "Research thread", "agent/thread.sh", &["research"]),
                 script(
                     'f',
@@ -215,8 +254,60 @@ pub fn build(s: &Settings) -> Vec<Entry> {
                         opener = or_default(&files, "xdg-open"),
                     ),
                 ),
+                // Shift+letter: the same entry, once, on the other backend.
+                script(
+                    'R',
+                    "Research thread (other backend)",
+                    "agent/thread.sh",
+                    &["research", "--other"],
+                )
+                .hidden(),
+                script(
+                    'F',
+                    "Feature in a repo (other backend)",
+                    "agent/feature.sh",
+                    &["--other"],
+                )
+                .hidden(),
+                script(
+                    'G',
+                    "HTML slides (other backend)",
+                    "agent/thread.sh",
+                    &["slides", "--other"],
+                )
+                .hidden(),
+                script(
+                    'W',
+                    "Ask about the window (other backend)",
+                    "agent/handoff.sh",
+                    &["--window", "--other"],
+                )
+                .hidden(),
+                script(
+                    'S',
+                    "Ask about a region (other backend)",
+                    "agent/handoff.sh",
+                    &["--region", "--other"],
+                )
+                .hidden(),
+                script(
+                    'A',
+                    "Ask about a file (other backend)",
+                    "agent/handoff.sh",
+                    &["--file", "--other"],
+                )
+                .hidden(),
+                script(
+                    'C',
+                    "Ask about the clipboard (other backend)",
+                    "agent/handoff.sh",
+                    &["--clipboard", "--other"],
+                )
+                .hidden(),
             ],
-        ),
+        )
+        .with_badge(move || Some(agent_backend(&default_backend)))
+        .with_hint("Shift+letter: run once on the other backend"),
         menu(
             'h',
             "help",
@@ -303,6 +394,21 @@ fn or_default(setting: &str, default: &str) -> String {
     } else {
         setting.to_string()
     }
+}
+
+/// The agent backend Menu → a b last chose (state file written by scripts/agent/backend.sh),
+/// else the one from settings.
+fn agent_backend(default: &str) -> String {
+    let state = std::env::var_os("XDG_STATE_HOME")
+        .map(std::path::PathBuf::from)
+        .or_else(|| {
+            std::env::var_os("HOME").map(|h| std::path::Path::new(&h).join(".local/state"))
+        });
+    state
+        .and_then(|dir| std::fs::read_to_string(dir.join("pinnacle-config/agent-backend")).ok())
+        .map(|s| s.trim().to_string())
+        .filter(|s| !s.is_empty())
+        .unwrap_or_else(|| default.to_string())
 }
 
 /// Quotes a string for `sh -c`.

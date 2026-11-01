@@ -17,6 +17,7 @@ CONFIG_REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
 WITH_LUA=1
 PACKAGES_ONLY=0
+WITH_LOCAL_AI=0
 
 step() { printf '\n\033[1;34m==> %s\033[0m\n' "$*"; }
 
@@ -28,6 +29,7 @@ parse_args() {
         case "$arg" in
             --no-lua) WITH_LUA=0 ;;
             --packages-only) PACKAGES_ONLY=1 ;;
+            --with-local-ai) WITH_LOCAL_AI=1 ;;
             -h|--help) printf '%s\n' "$help"; exit 0 ;;
             *) echo "unknown option: $arg" >&2; exit 2 ;;
         esac
@@ -170,6 +172,10 @@ run_common_steps() {
     build_config_and_pctl
     create_folders
     install_claude_code
+    if [[ $WITH_LOCAL_AI == 1 ]]; then
+        step "Installing the local model (Ollama)"
+        "$CONFIG_REPO/scripts/install-local-ai.sh"
+    fi
 
     step "Done"
     echo "Try it nested first:  $CONFIG_REPO/scripts/nested.sh"

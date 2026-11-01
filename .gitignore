@@ -2,3 +2,4 @@
 *.swp
 # Personal overrides of settings.toml
 /local.toml
+__pycache__/

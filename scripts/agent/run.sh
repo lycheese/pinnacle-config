@@ -21,7 +21,12 @@ if [[ "$backend" == local ]]; then
     export ANTHROPIC_BASE_URL="${PCFG_LOCAL_AI_URL:-http://localhost:11434}"
     export ANTHROPIC_AUTH_TOKEN=ollama
     export ANTHROPIC_API_KEY=""
-    args+=(--model "${PCFG_LOCAL_AI_MODEL:-qwen3.5:9b}")
+    if ! model="$("$REPO/scripts/agent/local-model.sh" --ensure)"; then
+        printf '\nThe local model is not available. Press Enter to close.'
+        read -r _
+        exit 1
+    fi
+    args+=(--model "$model")
 fi
 
 read -r -a claude <<<"${PCFG_AGENT_COMMAND:-claude}"

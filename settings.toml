@@ -73,3 +73,5 @@ profiles_dir = "~/.config/claude-profiles"
 # Qwen3.5 9B (4-bit, ~6 GB) fits an 8 GB GPU; use a smaller model on less VRAM.
 url = "http://localhost:11434"
 model = "qwen3.5:9b"
+# Context window for the agent, in tokens. Claude Code needs at least ~32k; more uses more VRAM.
+context = 32768
