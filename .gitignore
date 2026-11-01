@@ -1,2 +1,4 @@
 /target
 *.swp
+# Personal overrides of settings.toml
+/local.toml

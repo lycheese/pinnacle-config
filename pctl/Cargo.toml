@@ -9,5 +9,6 @@ description = "Small JSON-speaking IPC client for Pinnacle, meant for scripts an
 
 [dependencies]
 pinnacle-api = { workspace = true }
+settings = { path = "../settings" }
 serde_json = "1"
 libc = "0.2"

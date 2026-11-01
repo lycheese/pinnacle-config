@@ -41,6 +41,10 @@ ACTIONS:
                           (until next login; picks the closest listed refresh rate)
     spawn <cmd> [args..]  Start a program inside the session
     reload                Restart the config (rebuilds it via cargo run)
+
+SETTINGS (no running session needed):
+    settings --env        settings.toml + local.toml as `export PCFG_...` lines
+    settings get <key>    One value by dotted path, e.g. `settings get notes.dir`
 ";
 
 fn main() -> ExitCode {
@@ -49,6 +53,10 @@ fn main() -> ExitCode {
     if args.is_empty() || matches!(args[0].as_str(), "-h" | "--help" | "help") {
         print!("{USAGE}");
         return ExitCode::SUCCESS;
+    }
+
+    if args[0] == "settings" {
+        return settings_command(&args[1..]);
     }
 
     if std::env::var_os(SOCKET_ENV).is_none() {
@@ -69,6 +77,27 @@ fn main() -> ExitCode {
             ExitCode::FAILURE
         }
     }
+}
+
+/// `pctl settings ...`: reads the settings files only, no compositor connection.
+fn settings_command(args: &[String]) -> ExitCode {
+    let file = settings::Settings::load();
+    match args.first().map(String::as_str) {
+        Some("--env") => print!("{}", file.to_env()),
+        Some("get") if args.len() == 2 => match file.get(&args[1]) {
+            Some(settings::Value::String(s)) => println!("{}", settings::expand_home(s)),
+            Some(value) => println!("{value}"),
+            None => {
+                eprintln!("pctl: no setting `{}`", args[1]);
+                return ExitCode::FAILURE;
+            }
+        },
+        _ => {
+            eprintln!("pctl: usage: pctl settings --env | pctl settings get <key>");
+            return ExitCode::FAILURE;
+        }
+    }
+    ExitCode::SUCCESS
 }
 
 fn find_socket() -> Option<PathBuf> {

@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["config", "pctl"]
+members = ["config", "pctl", "settings"]
 
 [workspace.package]
 edition = "2024"

@@ -8,6 +8,7 @@ publish = false
 
 [dependencies]
 pinnacle-api = { workspace = true }
+settings = { path = "../settings" }
 
 [features]
 # Snowcap is Pinnacle's widget system: keybind overlay, quit prompt, crash messages, focus borders.

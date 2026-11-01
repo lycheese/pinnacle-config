@@ -1,0 +1,11 @@
+[package]
+name = "settings"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish = false
+description = "Reads settings.toml merged with local.toml, for the config and pctl"
+
+[dependencies]
+toml = "0.8"

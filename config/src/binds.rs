@@ -146,19 +146,19 @@ fn windows(s: &Settings) {
 
 fn apps(s: &Settings) {
     let m = s.mod_key;
-    let terminal = s.terminal;
-    let launcher = s.launcher;
+    let terminal = s.terminal.clone();
+    let launcher = s.launcher.clone();
 
     input::keybind(m, Keysym::Return)
         .on_press(move || {
-            Command::new(terminal).spawn();
+            crate::settings::sh(&terminal);
         })
         .group("Apps")
         .description("Open a terminal");
 
     input::keybind(m, 'r')
         .on_press(move || {
-            Command::new(launcher[0]).args(&launcher[1..]).spawn();
+            crate::settings::sh(&launcher);
         })
         .group("Apps")
         .description("Open the app launcher");

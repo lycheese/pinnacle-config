@@ -5,14 +5,17 @@
 //! Applies to monitors present at startup and to ones connected later. Skips the mode change
 //! when the monitor already runs at that mode, so a config reload does not blank the screen.
 //!
-//! No binds. Try other modes live with `pctl mode <output> <w>x<h>@<hz>`.
+//! Turn off with `display.max_refresh_rate = false` in `local.toml`. No binds.
+//! Try other modes live with `pctl mode <output> <w>x<h>@<hz>`.
 
 use pinnacle_api::output::{self, OutputHandle};
 
 use crate::settings::Settings;
 
-pub fn setup(_settings: &Settings) {
-    output::for_each_output(max_refresh_rate);
+pub fn setup(settings: &Settings) {
+    if settings.file.bool("display.max_refresh_rate", true) {
+        output::for_each_output(max_refresh_rate);
+    }
 }
 
 fn max_refresh_rate(out: &OutputHandle) {

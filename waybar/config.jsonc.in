@@ -1,5 +1,6 @@
-// Waybar for Pinnacle. Started by config/src/plugins/autostart.rs with `-c` pointing here;
-// the style comes from the system default (/etc/xdg/waybar/style.css).
+// Waybar for Pinnacle. A template: config/src/plugins/autostart.rs fills in @...@ from the
+// settings, writes the result to $XDG_RUNTIME_DIR/pinnacle-config/waybar.jsonc and starts waybar
+// with it. The style comes from the system default (/etc/xdg/waybar/style.css).
 // Icons are Font Awesome 4.7 glyphs (private-use characters, invisible in many editors and tools).
 // FA5-only codepoints render as boxes: the installed font is fonts-font-awesome 4.7.
 {
@@ -40,9 +41,8 @@
         "format": "{}% "
     },
     "temperature": {
-        // CPU package sensor (coretemp); the default thermal zone is the ACPI one.
-        "hwmon-path-abs": "/sys/devices/platform/coretemp.0/hwmon",
-        "input-filename": "temp1_input",
+        // Filled in from settings.toml [waybar] temperature_hwmon (see autostart.rs).
+        @TEMPERATURE_SOURCE@
         "critical-threshold": 80,
         "format": "{temperatureC}°C {icon}",
         "format-icons": ["", "", ""]
