@@ -99,6 +99,14 @@ link_config() {
     fi
 }
 
+# Ubuntu enables waybar.service for every graphical session. The config already starts waybar,
+# so the unit would add a second bar in Pinnacle (and a stray one in COSMIC/GNOME).
+# Masking is per user and needs no sudo; undo with `systemctl --user unmask waybar.service`.
+mask_session_units() {
+    step "Masking waybar.service (the config starts waybar itself)"
+    systemctl --user mask waybar.service
+}
+
 build_config_and_pctl() {
     step "Pre-building the config and installing pctl"
     # Building now means the first login does not wait for a full compile.
@@ -118,6 +126,7 @@ run_common_steps() {
     install_session_files
     install_lua_api
     link_config
+    mask_session_units
     build_config_and_pctl
 
     step "Done"
