@@ -1,0 +1,32 @@
+/* Waybar style for Pinnacle: the system default plus tag pills. Passed to waybar with `-s` by
+ * config/src/plugins/autostart.rs. Restart waybar to apply. */
+@import url("/etc/xdg/waybar/style.css");
+
+/* Keep the first tag off the screen edge. */
+.modules-left {
+    margin-left: 6px;
+}
+
+/* Tags (custom/tag-N modules; classes come from `pctl tags --tag N`). */
+label.tag {
+    min-width: 14px;
+    padding: 0 8px;
+    margin: 4px 0;
+    border-radius: 6px;
+    color: rgba(255, 255, 255, 0.7);
+    transition: background-color 0.15s, color 0.15s;
+}
+
+/* Has windows but not shown: a thin bar under the number. */
+label.tag.occupied {
+    background-color: rgba(255, 255, 255, 0.08);
+    box-shadow: inset 0 -2px rgba(255, 255, 255, 0.45);
+}
+
+/* Shown on an output. */
+label.tag.active {
+    background-color: #5e81ac;
+    color: #ffffff;
+    font-weight: bold;
+    box-shadow: none;
+}

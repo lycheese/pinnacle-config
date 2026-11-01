@@ -181,8 +181,8 @@ fn all_tags_json(outputs: &[Output]) -> Value {
     })
 }
 
-/// One tag name across all outputs, for one waybar module per tag. The text is empty (waybar
-/// hides the module) unless the tag is active or has windows on some output.
+/// One tag name across all outputs, for one waybar module per tag. The text is the plain name,
+/// or empty (waybar hides the module) unless the tag is active or has windows on some output.
 fn single_tag_json(outputs: &[Output], name: &str) -> Value {
     let tags: Vec<&Tag> = outputs
         .iter()
@@ -196,8 +196,9 @@ fn single_tag_json(outputs: &[Output], name: &str) -> Value {
         .map(String::as_str)
         .collect();
 
+    // Plain name: waybar/style.css styles the active/occupied classes.
     let text = if active || !apps.is_empty() {
-        label(active, name)
+        escape(name)
     } else {
         String::new()
     };

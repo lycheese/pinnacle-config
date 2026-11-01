@@ -16,7 +16,7 @@ on startup and on every reload; the config talks to the compositor over gRPC.
 | `config/src/plugins/` | Self-contained features, one module each, registered in `plugins/mod.rs` |
 | `settings.toml`, `local.toml` | Documented defaults; gitignored personal overrides. Scripts read them via `eval "$(pctl settings --env)"` |
 | `settings/` | Crate that merges the two, used by the config and pctl |
-| `waybar/config.jsonc.in` | Waybar template, rendered with the settings at config start; restart waybar to apply. Tags are `custom/tag-N` modules fed by `pctl tags --watch --tag N`. Its Font Awesome icons are invisible private-use characters: edit with a script and check their count stays the same |
+| `waybar/config.jsonc.in` | Waybar template, rendered with the settings at config start; restart waybar to apply. Tags are `custom/tag-N` modules fed by `pctl tags --watch --tag N`, styled by their `active`/`occupied` classes in `waybar/style.css` (imports the system default style). Its Font Awesome icons are invisible private-use characters: edit with a script and check their count stays the same |
 | `pctl/` | CLI that queries/controls the running session and prints JSON |
 | `scripts/install-fedora.sh`, `scripts/install-popos.sh` | Distro packages and toolchain, then the shared steps |
 | `scripts/lib/common.sh` | Shared install steps: build Pinnacle, install session files, link this repo |

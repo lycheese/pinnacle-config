@@ -6,6 +6,7 @@
 //! Waybar uses `waybar/config.jsonc.in`, rendered with the settings on every config start
 //! into `$XDG_RUNTIME_DIR/pinnacle-config/waybar.jsonc`. A running waybar does not reread it;
 //! restart waybar (or log in again) after changing the template or `[waybar]` settings.
+//! The style is `waybar/style.css` (the system default plus tag pills), used in place.
 
 use std::path::{Path, PathBuf};
 
@@ -26,8 +27,14 @@ const CORETEMP: &str = "/sys/devices/platform/coretemp.0/hwmon";
 pub fn setup(settings: &Settings) {
     match render_waybar_config(settings) {
         Ok(path) => {
+            let style = settings::repo_dir().join("waybar/style.css");
             Command::new("waybar")
-                .args(["-c", &path.to_string_lossy()])
+                .args([
+                    "-c",
+                    &path.to_string_lossy(),
+                    "-s",
+                    &style.to_string_lossy(),
+                ])
                 .once()
                 .spawn();
         }
