@@ -36,8 +36,17 @@ jobs:
             | sed -nE 's#^([^: ]+\.rs):([0-9]+):([0-9]+): (warning|error): (.*)#::error file=\1,line=\2,col=\3::\5#p'
 
       # Rust, shell and Python tests; see "Testing" in CLAUDE.md.
+      # Failing tests are also emitted as annotations, so they show without opening logs.
       - name: Test
-        run: tests/run.sh
+        shell: bash
+        run: |
+          set -o pipefail
+          if ! tests/run.sh 2>&1 | tee test.log; then
+            sed -e 's/\x1b\[[0-9;]*m//g' test.log \
+              | grep -E -B4 -A3 '^FAIL|panicked|^Failed|^ERROR|^FAIL:|Error|not found|command not found' \
+              | head -n 40 | sed -e 's/%/%25/g' -e 's/^/::error::/'
+            exit 1
+          fi
 
   # Runs each installer's package step on a clean system to catch wrong or missing package names.
   installers:

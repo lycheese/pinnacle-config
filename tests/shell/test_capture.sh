@@ -47,6 +47,7 @@ test_search_lists_newest_capture_first() {
     printf 'second #b\n' | capture_save
     # The listing search.sh builds: "<line>\t<heading> · <first line>".
     local listing
+    # shellcheck disable=SC2016 # a sed pattern that matches literal $( and $INBOX
     listing="$(sed -n '/^entries="$(awk/,/^. "$INBOX" | tac)"$/p' "$REPO/scripts/capture/search.sh")"
     [[ -n "$listing" ]] || fail "listing code not found in search.sh"
     eval "$listing"
