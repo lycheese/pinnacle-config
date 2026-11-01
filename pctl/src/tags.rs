@@ -105,13 +105,16 @@ impl SpinCheck {
     }
 
     fn spinning(&mut self) -> bool {
-        let wall = self.wall.elapsed();
-        let (before, now) = (self.cpu, cpu_time());
-        *self = Self {
-            wall: Instant::now(),
-            cpu: now,
-        };
-        matches!((before, now), (Some(b), Some(n)) if (n - b) * 2 > wall)
+        self.record(Instant::now(), cpu_time())
+    }
+
+    /// Takes a reading (wall clock, process CPU time); true if CPU time grew by more than half
+    /// the wall time since the previous reading.
+    fn record(&mut self, wall: Instant, cpu: Option<Duration>) -> bool {
+        let elapsed = wall.saturating_duration_since(self.wall);
+        let before = std::mem::replace(&mut self.cpu, cpu);
+        self.wall = wall;
+        matches!((before, cpu), (Some(b), Some(n)) if n.saturating_sub(b) * 2 > elapsed)
     }
 }
 
@@ -301,5 +304,124 @@ fn print_line(line: &impl std::fmt::Display) {
     // waybar reads line by line, so flush every update. A closed pipe means waybar is gone.
     if writeln!(out, "{line}").and_then(|()| out.flush()).is_err() {
         std::process::exit(0);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn tag(name: &str, active: bool, apps: &[&str]) -> Tag {
+        Tag {
+            name: name.into(),
+            active,
+            apps: apps.iter().map(|a| a.to_string()).collect(),
+        }
+    }
+
+    fn output(name: &str, tags: Vec<Tag>) -> Output {
+        Output {
+            name: name.into(),
+            focused: true,
+            tags,
+        }
+    }
+
+    #[test]
+    fn all_tags_shows_active_and_occupied_only() {
+        let outputs = [output(
+            "DP-3",
+            vec![
+                tag("1", false, &[]),
+                tag("2", true, &[]),
+                tag("3", false, &["firefox", "kitty"]),
+            ],
+        )];
+        let json = all_tags_json(&outputs);
+        assert_eq!(json["text"], "<b>[2]</b> 3");
+        assert_eq!(json["tooltip"], "3: firefox, kitty");
+        assert_eq!(json["outputs"][0]["tags"][2]["windows"], 2);
+    }
+
+    #[test]
+    fn all_tags_prefixes_outputs_when_there_are_several() {
+        let outputs = [
+            output("DP-1", vec![tag("1", true, &[])]),
+            output("DP-2", vec![tag("1", true, &["a"])]),
+        ];
+        assert_eq!(
+            all_tags_json(&outputs)["text"],
+            "DP-1: <b>[1]</b>  │  DP-2: <b>[1]</b>"
+        );
+    }
+
+    #[test]
+    fn single_tag_classes_and_empty_text_when_unused() {
+        let outputs = [output(
+            "DP-3",
+            vec![
+                tag("1", true, &[]),
+                tag("2", false, &["mpv"]),
+                tag("3", false, &[]),
+            ],
+        )];
+        let one = single_tag_json(&outputs, "1");
+        assert_eq!(one["text"], "1");
+        assert_eq!(one["class"], json!(["tag", "active"]));
+        let two = single_tag_json(&outputs, "2");
+        assert_eq!(two["class"], json!(["tag", "occupied"]));
+        assert_eq!(two["tooltip"], "mpv");
+        let three = single_tag_json(&outputs, "3");
+        assert_eq!(three["text"], "");
+        assert_eq!(three["class"], json!(["tag"]));
+    }
+
+    #[test]
+    fn pango_markup_is_escaped() {
+        assert_eq!(escape("a<b>&c"), "a&lt;b&gt;&amp;c");
+        let outputs = [output("x", vec![tag("<1>", false, &["R&D"])])];
+        assert_eq!(all_tags_json(&outputs)["tooltip"], "&lt;1&gt;: R&amp;D");
+    }
+
+    fn reading(cpu_ms: u64) -> Option<Duration> {
+        Some(Duration::from_millis(cpu_ms))
+    }
+
+    #[test]
+    fn cpu_time_is_readable() {
+        assert!(cpu_time().is_some(), "/proc/self/stat is readable");
+    }
+
+    #[test]
+    fn spin_check_is_quiet_while_idle() {
+        let start = Instant::now();
+        let mut spin = SpinCheck {
+            wall: start,
+            cpu: reading(1000),
+        };
+        assert!(!spin.record(start + Duration::from_secs(2), reading(1010)));
+    }
+
+    #[test]
+    fn spin_check_notices_a_busy_loop() {
+        let start = Instant::now();
+        let mut spin = SpinCheck {
+            wall: start,
+            cpu: reading(1000),
+        };
+        // Two busy threads for 2 s: 4 s of CPU.
+        assert!(spin.record(start + Duration::from_secs(2), reading(5000)));
+        // The next interval is measured from the last reading.
+        assert!(!spin.record(start + Duration::from_secs(4), reading(5020)));
+    }
+
+    #[test]
+    fn spin_check_ignores_missing_readings() {
+        let start = Instant::now();
+        let mut spin = SpinCheck {
+            wall: start,
+            cpu: None,
+        };
+        assert!(!spin.record(start + Duration::from_secs(2), reading(9000)));
     }
 }

@@ -484,3 +484,102 @@ fn toggle_refresh_rate() {
     };
     out.set_mode(target.size.w, target.size.h, target.refresh_rate_mhz);
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::collections::HashSet;
+
+    fn tree() -> Vec<Entry> {
+        build(&Settings::for_test())
+    }
+
+    fn find(entries: &[Entry], key: char) -> &Entry {
+        entries.iter().find(|e| e.key() == key).expect("key exists")
+    }
+
+    /// Two entries with one key would make the second unreachable.
+    #[test]
+    fn keys_are_unique_at_every_level() {
+        fn check(entries: &[Entry], path: &str) {
+            let mut seen = HashSet::new();
+            for entry in entries {
+                assert!(
+                    seen.insert(entry.key()),
+                    "duplicate key {:?} in SPC {path}",
+                    entry.key()
+                );
+                if let Entry::Menu { children, key, .. } = entry {
+                    check(children, &format!("{path}{key} "));
+                }
+            }
+        }
+        check(&tree(), "");
+    }
+
+    #[test]
+    fn children_at_follows_menus_and_stops_at_actions() {
+        let tree = tree();
+        let agent = children_at(&tree, &['a']).expect("a is a menu");
+        assert!(agent.iter().any(|e| e.key() == 'r'));
+        assert!(
+            children_at(&tree, &['a', 'r']).is_none(),
+            "a r is an action"
+        );
+        assert!(children_at(&tree, &['!']).is_none(), "unknown key");
+        assert_eq!(children_at(&tree, &[]).map(<[_]>::len), Some(tree.len()));
+    }
+
+    #[test]
+    fn flatten_lists_key_paths_and_labels() {
+        let tree = vec![
+            action(' ', "Palette", || {}),
+            menu('l', "layout", vec![action('n', "Next layout", || {})]),
+        ];
+        let rows: Vec<(String, String)> =
+            flatten(&tree).into_iter().map(|(k, l, _)| (k, l)).collect();
+        assert_eq!(
+            rows,
+            [
+                ("SPC".into(), "Palette".into()),
+                ("l n".into(), "layout › Next layout".into()),
+            ]
+        );
+    }
+
+    /// Shift+letter in the agent menu runs the lowercase entry on the other backend.
+    #[test]
+    fn agent_shift_entries_are_hidden_twins_of_lowercase_ones() {
+        let tree = tree();
+        let agent = children_at(&tree, &['a']).unwrap();
+        let shifted: Vec<&Entry> = agent.iter().filter(|e| e.key().is_uppercase()).collect();
+        assert!(!shifted.is_empty());
+        for entry in shifted {
+            let Entry::Action { hidden, key, .. } = entry else {
+                panic!("{:?} should be an action", entry.key());
+            };
+            assert!(hidden, "{key} should be hidden from the panel");
+            let lower = key.to_ascii_lowercase();
+            assert!(matches!(
+                find(agent, lower),
+                Entry::Action { hidden: false, .. }
+            ));
+        }
+    }
+
+    #[test]
+    fn agent_menu_shows_backend_badge_and_shift_hint() {
+        let tree = tree();
+        let Entry::Menu { badge, hint, .. } = find(&tree, 'a') else {
+            panic!("a should be a menu");
+        };
+        assert!(badge.as_ref().and_then(|b| b()).is_some());
+        assert!(hint.as_deref().unwrap_or("").contains("Shift"));
+    }
+
+    #[test]
+    fn shell_quote_survives_single_quotes() {
+        assert_eq!(shell_quote("it's"), r"'it'\''s'");
+        assert_eq!(shell_quote("/a b"), "'/a b'");
+    }
+}

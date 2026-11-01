@@ -37,6 +37,23 @@ impl Settings {
     }
 }
 
+#[cfg(test)]
+impl Settings {
+    /// The repo's `settings.toml` defaults, without `local.toml` or a running compositor.
+    pub fn for_test() -> Self {
+        let file = settings::Settings::parse(include_str!("../../settings.toml"))
+            .expect("settings.toml parses");
+        Self {
+            mod_key: Mod::SUPER,
+            terminal: "alacritty".into(),
+            launcher: "fuzzel".into(),
+            gaps: 6.0,
+            tag_names: ["1", "2", "3", "4", "5", "6", "7", "8", "9"],
+            file,
+        }
+    }
+}
+
 /// Runs a command line with `sh -c`, so settings may contain arguments.
 pub fn sh(command_line: &str) {
     Command::new("sh").args(["-c", command_line]).spawn();

@@ -9,8 +9,9 @@ STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/pinnacle-config"
 mkdir -p "$STATE_DIR"
 
 # pctl lives in ~/.cargo/bin, which may be missing from PATH when started by the compositor.
-PCTL="$(command -v pctl || echo "$HOME/.cargo/bin/pctl")"
-export PINNACLE_CONFIG_REPO="$REPO"
+PCTL="${PCTL:-$(command -v pctl || echo "$HOME/.cargo/bin/pctl")}"
+# Where settings.toml / local.toml are read from (tests point it at a copy).
+export PINNACLE_CONFIG_REPO="${PINNACLE_CONFIG_REPO:-$REPO}"
 eval "$("$PCTL" settings --env)"
 
 # fd is called fdfind on Debian/Ubuntu.

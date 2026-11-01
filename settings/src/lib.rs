@@ -36,6 +36,13 @@ impl Settings {
         Self { table }
     }
 
+    /// Settings from TOML text alone (no files), e.g. `settings.toml` in tests.
+    pub fn parse(text: &str) -> Result<Self, toml::de::Error> {
+        Ok(Self {
+            table: text.parse()?,
+        })
+    }
+
     pub fn get(&self, path: &str) -> Option<&Value> {
         let mut parts = path.split('.');
         let mut value = self.table.get(parts.next()?)?;
