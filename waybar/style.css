@@ -2,9 +2,25 @@
  * config/src/plugins/autostart.rs. Restart waybar to apply. */
 @import url("/etc/xdg/waybar/style.css");
 
-/* Keep the first tag off the screen edge. */
+/* Keep the outermost modules off the screen edges. */
 .modules-left {
     margin-left: 6px;
+}
+
+.modules-right {
+    margin-right: 6px;
+}
+
+/* Rounded, inset blocks for the coloured modules, matching the tag pills below. */
+#clock,
+#pulseaudio,
+#network,
+#cpu,
+#memory,
+#temperature,
+#tray {
+    margin: 4px 0;
+    border-radius: 6px;
 }
 
 /* Tags (custom/tag-N modules; classes come from `pctl tags --tag N`). */
