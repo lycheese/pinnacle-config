@@ -152,7 +152,8 @@ pub fn build(s: &Settings) -> Vec<Entry> {
             'f',
             "file",
             vec![
-                script('f', "Find file → editor", "files/open.sh", &[]),
+                script('f', "Find file (browse folders)", "files/browse.sh", &[]),
+                script('F', "Fuzzy-find any file", "files/open.sh", &[]),
                 script('r', "Recent files", "files/open.sh", &["--recent"]),
                 script('c', "Edit this config", "files/edit-config.sh", &[]),
                 script(
