@@ -63,8 +63,9 @@ while :; do
 
     case "$picked" in
         ../) dir="$(dirname "$dir")"; continue ;;
-        "~" | "~/") target="$HOME" ;;
-        "~/"*) target="$HOME/${picked#\~/}" ;;
+        # A typed ~ is text from fuzzel, so match it literally.
+        \~ | \~/) target="$HOME" ;;
+        \~/*) target="$HOME/${picked#\~/}" ;;
         /*) target="$picked" ;;
         *) target="${dir%/}/$picked" ;;
     esac
