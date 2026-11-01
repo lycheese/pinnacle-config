@@ -9,12 +9,15 @@
 //! To disable a plugin, comment out its line in `setup` below.
 
 mod autostart;
+mod desktop_env;
 mod focus_history;
 mod window_rules;
 
 use crate::settings::Settings;
 
 pub fn setup(settings: &Settings) {
+    // First: programs spawned by later plugins inherit this environment.
+    desktop_env::setup(settings);
     window_rules::setup(settings);
     focus_history::setup(settings);
     autostart::setup(settings);
