@@ -45,7 +45,7 @@ when running as a session.
 
 ## Runtime control (IPC)
 
-- `pctl state | windows | focused` – JSON snapshot. Window `id`s are what the action commands take.
+- `pctl state | windows | focused | binds` – JSON snapshot. Window `id`s are what the action commands take.
 - `pctl focus|close|float <id>`, `pctl move <id> <tag>`, `pctl tag <name>`, `pctl spawn <cmd>`,
   `pctl reload`.
 - `pinnacle client -e '<lua>'` – the full Lua API for one-off calls not covered by pctl, e.g.
