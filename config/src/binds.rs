@@ -1,6 +1,6 @@
 //! Keybinds and mousebinds that are not tied to layouts or tags.
 //!
-//! Every bind gets a `group` and `description`; they show up in the keybind overlay (Mod+S)
+//! Every bind gets a `group` and `description`; they show up in the keybind overlay (Mod+I)
 //! and keep the config self-documenting.
 
 use pinnacle_api::input::{self, Bind, Keysym, Mod, MouseButton};
@@ -23,7 +23,7 @@ fn compositor(s: &Settings) {
 
     #[cfg(feature = "snowcap")]
     {
-        input::keybind(m, 's')
+        input::keybind(m, 'i')
             .on_press(|| {
                 pinnacle_api::snowcap::BindOverlay::new().show();
             })

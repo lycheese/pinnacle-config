@@ -30,7 +30,7 @@ Your existing desktop (GNOME or COSMIC) stays installed and selectable.
 
 ## Default binds
 
-`Mod` is Super in a real session and Alt when nested. `Mod+S` shows all binds.
+`Mod` is Super in a real session and Alt when nested. `Mod+I` shows all binds.
 Any other `Super+key` combo is swallowed, so it never reaches the focused app.
 
 | Bind | Action |
@@ -38,6 +38,7 @@ Any other `Super+key` combo is swallowed, so it never reaches the focused app.
 | `Mod+Return` / `Mod+R` | Terminal (Alacritty) / launcher (fuzzel) |
 | `Mod+Arrows` | Focus left/down/up/right |
 | `Mod+Shift+Arrows` | Swap with window in that direction |
+| `Mod+S` | Screenshot: drag a region or click a monitor; saved to ~/Pictures/Screenshots and copied |
 | `Mod+Tab` | Back to the previous window |
 | `Mod+Space` / `Mod+Shift+Space` | Next / previous layout (master-stack left/right, dwindle, fair) |
 | `Mod+1…9` | Switch to tag |

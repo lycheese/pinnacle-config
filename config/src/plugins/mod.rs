@@ -11,6 +11,7 @@
 mod autostart;
 mod desktop_env;
 mod focus_history;
+mod screenshot;
 mod super_grab;
 mod window_rules;
 
@@ -21,6 +22,7 @@ pub fn setup(settings: &Settings) {
     desktop_env::setup(settings);
     window_rules::setup(settings);
     focus_history::setup(settings);
+    screenshot::setup(settings);
     autostart::setup(settings);
     // Last: its long section goes to the bottom of the keybind overlay.
     super_grab::setup(settings);
