@@ -39,6 +39,7 @@ RUNTIME_DEPS=(
     xwayland libvulkan1 mesa-vulkan-drivers
     xdg-desktop-portal-wlr xdg-desktop-portal-gtk gnome-keyring policykit-1-gnome
     alacritty fuzzel waybar mako-notifier brightnessctl playerctl wireplumber
+    fonts-font-awesome grim slurp wl-clipboard libnotify-bin
 )
 LUA_DEPS=(lua5.4 liblua5.4-dev luarocks libssl-dev m4)
 

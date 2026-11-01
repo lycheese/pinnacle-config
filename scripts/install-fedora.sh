@@ -28,6 +28,7 @@ RUNTIME_DEPS=(
     xorg-x11-server-Xwayland vulkan-loader mesa-vulkan-drivers
     xdg-desktop-portal-wlr xdg-desktop-portal-gtk gnome-keyring mate-polkit
     alacritty fuzzel waybar mako brightnessctl playerctl wireplumber
+    fontawesome4-fonts grim slurp wl-clipboard libnotify
 )
 LUA_DEPS=(lua lua-devel luarocks openssl-devel m4)
 
